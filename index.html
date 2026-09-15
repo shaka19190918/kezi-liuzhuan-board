@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>直播客资流转看板</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f8f9fa;
+  --card: #ffffff;
+  --border: #e9ecef;
+  --text: #1a1a2e;
+  --text-secondary: #6c757d;
+  --text-muted: #adb5bd;
+  --primary: #6366f1;
+  --primary-light: #eef2ff;
+  --green: #22c55e;
+  --green-light: #dcfce7;
+  --orange: #f97316;
+  --orange-light: #ffedd5;
+  --red: #ef4444;
+  --red-light: #fee2e2;
+  --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-lg: 0 4px 12px rgba(0,0,0,0.08);
+  --radius: 10px;
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+/* ── 顶部导航 ── */
+.navbar {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.navbar-left { display: flex; align-items: center; gap: 14px; }
+.navbar-logo {
+  width: 32px; height: 32px;
+  background: var(--primary);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-weight: 700; font-size: 16px;
+}
+.navbar h1 { font-size: 17px; font-weight: 600; }
+.navbar-right { display: flex; align-items: center; gap: 12px; }
+.readonly-badge {
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: var(--orange-light);
+  color: #c2410c;
+  font-size: 11px;
+  font-weight: 600;
+}
+.update-time { font-size: 12px; color: var(--text-secondary); }
+.btn {
+  padding: 7px 16px;
+  border: none;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s;
+}
+.btn-outline { background: transparent; color: var(--text-secondary); border: 1px solid var(--border); }
+.btn-outline:hover { background: var(--bg); }
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: #5558e0; }
+.btn-sm { padding: 4px 10px; font-size: 12px; }
+
+/* ── 提示条 ── */
+.notice {
+  background: var(--primary-light);
+  border-bottom: 1px solid #dfe4ff;
+  padding: 9px 28px;
+  font-size: 12.5px;
+  color: #4338ca;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.container { padding: 24px 28px; max-width: 1400px; margin: 0 auto; }
+
+/* ── KPI ── */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.kpi-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: transform 0.15s;
+}
+.kpi-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.kpi-icon {
+  width: 44px; height: 44px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.kpi-info { flex: 1; }
+.kpi-value { font-size: 28px; font-weight: 700; line-height: 1.1; }
+.kpi-label { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+.kpi-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.kpi-sub b { color: var(--text-secondary); font-weight: 600; }
+
+/* ── 筛选 ── */
+.filter-bar {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  box-shadow: var(--shadow);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.filter-group { display: flex; align-items: center; gap: 6px; }
+.filter-label { font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
+.filter-select, .filter-input {
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+  transition: border 0.15s;
+}
+.filter-select:focus, .filter-input:focus { border-color: var(--primary); }
+.filter-divider { width: 1px; height: 22px; background: var(--border); }
+
+/* ── 表格 ── */
+.table-section {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+.table-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.table-header h2 { font-size: 15px; font-weight: 600; }
+.table-actions { display: flex; gap: 8px; }
+.table-scroll { max-height: 620px; overflow-y: auto; }
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th {
+  text-align: left;
+  padding: 10px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: #fafbfc;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.data-table td {
+  padding: 10px 16px;
+  border-bottom: 1px solid #f1f3f5;
+  font-size: 13px;
+}
+.data-table tbody tr:nth-child(even) { background: #fcfcfd; }
+.data-table tbody tr:hover { background: var(--primary-light); }
+.tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; }
+.tag-douyin { background: var(--orange-light); color: #c2410c; }
+.tag-wechat { background: var(--green-light); color: #15803d; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.badge-yes { background: var(--green-light); color: #15803d; }
+.badge-no { background: #f1f3f5; color: var(--text-muted); }
+.empty-row td { text-align: center; padding: 40px; color: var(--text-muted); }
+
+/* ── 趋势图 ── */
+.chart-section {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  margin-bottom: 24px;
+}
+.chart-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.chart-section h2 { font-size: 15px; font-weight: 600; }
+.range-tabs { display: flex; gap: 4px; background: var(--bg); border-radius: 8px; padding: 3px; }
+.range-tab {
+  border: none; background: transparent; padding: 5px 14px; font-size: 12px;
+  border-radius: 6px; cursor: pointer; color: var(--text-secondary); font-weight: 500; transition: all 0.15s;
+}
+.range-tab.active { background: var(--card); color: var(--primary); font-weight: 600; box-shadow: var(--shadow); }
+.chart-container { width: 100%; overflow-x: auto; }
+.chart-svg { width: 100%; min-width: 500px; }
+
+/* ── 来源分布 ── */
+.dist-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+.dist-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+}
+.dist-card h2 { font-size: 15px; font-weight: 600; margin-bottom: 14px; }
+.dist-row { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; font-size: 13px; }
+.dist-name { width: 92px; flex-shrink: 0; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dist-bar { flex: 1; height: 18px; background: var(--bg); border-radius: 4px; overflow: hidden; }
+.dist-bar-fill { height: 100%; border-radius: 4px; }
+.dist-val { width: 32px; text-align: right; font-weight: 600; flex-shrink: 0; }
+
+/* ── Toast ── */
+.toast {
+  position: fixed;
+  top: 20px; right: 20px;
+  background: var(--card);
+  border-radius: 8px;
+  padding: 12px 20px;
+  box-shadow: var(--shadow-lg);
+  z-index: 2000;
+  font-size: 13px;
+  transform: translateX(400px);
+  transition: transform 0.3s;
+}
+.toast.show { transform: translateX(0); }
+.toast-success { border-left: 3px solid var(--green); }
+.toast-error { border-left: 3px solid var(--red); }
+
+footer {
+  text-align: center;
+  padding: 18px 28px 30px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+@media (max-width: 768px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .dist-grid { grid-template-columns: 1fr; }
+  .navbar h1 { font-size: 14px; }
+  .container { padding: 16px; }
+  .filter-bar { flex-direction: column; align-items: stretch; }
+  .filter-group { width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar-left">
+    <div class="navbar-logo">客</div>
+    <h1>直播客资流转看板</h1>
+    <span class="readonly-badge">只读快照</span>
+  </div>
+  <div class="navbar-right">
+    <span class="update-time" id="updateTime">加载中...</span>
+  </div>
+</nav>
+
+<div class="notice">
+  <span>ℹ️</span>
+  <span>本页为<b>只读数据快照</b>，每日自动从腾讯文档台账同步一次。如需新增或修改客资，请在腾讯文档原表格中操作。</span>
+</div>
+
+<div class="container">
+  <!-- KPI -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-icon" style="background: var(--primary-light); color: var(--primary);">📊</div>
+      <div class="kpi-info">
+        <div class="kpi-value" id="kpiTotal">0</div>
+        <div class="kpi-label">总客资数</div>
+        <div class="kpi-sub" id="kpiTotalSub">近7天 <b>0</b></div>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon" style="background: var(--green-light); color: var(--green);">✓</div>
+      <div class="kpi-info">
+        <div class="kpi-value" id="kpiRetained">0</div>
+        <div class="kpi-label">已留资</div>
+        <div class="kpi-sub">留资率 <b id="kpiRetainedRate">0%</b></div>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon" style="background: var(--orange-light); color: var(--orange);">🔒</div>
+      <div class="kpi-info">
+        <div class="kpi-value" id="kpiPrivate">0</div>
+        <div class="kpi-label">已进私域</div>
+        <div class="kpi-sub">私域率 <b id="kpiPrivateRate">0%</b></div>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon" style="background: var(--red-light); color: var(--red);">🔥</div>
+      <div class="kpi-info">
+        <div class="kpi-value" id="kpiToday">0</div>
+        <div class="kpi-label">今日新增</div>
+        <div class="kpi-sub" id="kpiTodaySub">最近记录 <b>—</b></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 筛选 -->
+  <div class="filter-bar">
+    <div class="filter-group">
+      <span class="filter-label">渠道</span>
+      <select class="filter-select" id="filterChannel" onchange="applyFilters()">
+        <option value="">全部</option>
+        <option value="直播间">直播间</option>
+        <option value="微信小店">微信小店</option>
+      </select>
+    </div>
+    <div class="filter-divider"></div>
+    <div class="filter-group">
+      <span class="filter-label">平台</span>
+      <select class="filter-select" id="filterSource" onchange="applyFilters()">
+        <option value="">全部</option>
+        <option value="douyin">抖音</option>
+        <option value="wechat">微信</option>
+      </select>
+    </div>
+    <div class="filter-divider"></div>
+    <div class="filter-group">
+      <span class="filter-label">留资</span>
+      <select class="filter-select" id="filterRetained" onchange="applyFilters()">
+        <option value="">全部</option>
+        <option value="yes">已留资</option>
+        <option value="no">未留资</option>
+      </select>
+    </div>
+    <div class="filter-divider"></div>
+    <div class="filter-group">
+      <span class="filter-label">私域</span>
+      <select class="filter-select" id="filterPrivate" onchange="applyFilters()">
+        <option value="">全部</option>
+        <option value="yes">已进私域</option>
+        <option value="no">未进私域</option>
+      </select>
+    </div>
+    <div class="filter-divider"></div>
+    <div class="filter-group">
+      <span class="filter-label">搜索</span>
+      <input type="text" class="filter-input" id="filterKeyword" placeholder="搜索昵称/动作/备注..." oninput="applyFilters()" style="width:200px;">
+    </div>
+    <div class="filter-group" style="margin-left:auto;">
+      <button class="btn btn-outline btn-sm" onclick="resetFilters()">重置</button>
+    </div>
+  </div>
+
+  <!-- 趋势图 -->
+  <div class="chart-section">
+    <div class="chart-head">
+      <h2>客资趋势</h2>
+      <div class="range-tabs">
+        <button class="range-tab" data-days="7" onclick="setRange(7, this)">近7天</button>
+        <button class="range-tab active" data-days="14" onclick="setRange(14, this)">近14天</button>
+        <button class="range-tab" data-days="30" onclick="setRange(30, this)">近30天</button>
+        <button class="range-tab" data-days="365" onclick="setRange(365, this)">全部</button>
+      </div>
+    </div>
+    <div class="chart-container">
+      <svg class="chart-svg" id="trendChart" viewBox="0 0 680 200"></svg>
+    </div>
+  </div>
+
+  <!-- 渠道/转化分布 -->
+  <div class="dist-grid">
+    <div class="dist-card">
+      <h2>来源渠道分布</h2>
+      <div id="sourceDist"></div>
+    </div>
+    <div class="dist-card">
+      <h2>转化进度分布</h2>
+      <div id="actionDist"></div>
+    </div>
+  </div>
+
+  <!-- 表格 -->
+  <div class="table-section">
+    <div class="table-header">
+      <h2>客资明细 (<span id="tableCount">0</span> 条)</h2>
+      <div class="table-actions">
+        <button class="btn btn-outline btn-sm" onclick="exportCSV()">导出CSV</button>
+        <button class="btn btn-outline btn-sm" onclick="copyData()">复制数据</button>
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="width:50px;">序号</th>
+            <th style="width:70px;cursor:pointer;" onclick="toggleSort()" title="点击切换排序">日期 <span id="sortIndicator">▼</span></th>
+            <th style="width:50px;">星期</th>
+            <th>客资来源</th>
+            <th style="width:100px;">渠道</th>
+            <th style="width:80px;">留资</th>
+            <th style="width:80px;">私域</th>
+            <th>备注</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <tr class="empty-row"><td colspan="8">加载中...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<footer>数据快照由 WorkBuddy 每日自动同步 · 原始台账见腾讯文档「客资流转」<br>公网版已脱敏：手机号/微信号仅保留首尾片段，完整信息请在腾讯文档台账查看</footer>
+
+<div class="toast" id="toast"></div>
+
+<script src="data.js"></script>
+<script>
+// ── 状态 ────────────────────────────────
+let allData = [];
+let filteredData = [];
+let sortDesc = true;   // 默认最新在前
+let chartDays = 14;    // 默认近14天
+
+const COLUMNS = ['seq','date','weekday','source_douyin','source_wechat','action','retained','in_private','remark'];
+
+// 「M.D」格式日期 → Date 对象（跨年自动回退：未来日期视为去年）
+function parseDate(s) {
+  const m = s.match(/^(\d{1,2})[.\/-](\d{1,2})$/);
+  if (!m) return null;
+  const now = new Date();
+  let dt = new Date(now.getFullYear(), parseInt(m[1], 10) - 1, parseInt(m[2], 10));
+  if (dt > new Date(now.getTime() + 86400000)) dt = new Date(now.getFullYear() - 1, parseInt(m[1], 10) - 1, parseInt(m[2], 10));
+  return dt;
+}
+
+function dateNum(s) {
+  const dt = parseDate(s);
+  return dt ? dt.getFullYear() * 10000 + (dt.getMonth() + 1) * 100 + dt.getDate() : 0;
+}
+
+// ── CSV 解析（支持引号包裹的逗号/换行）──
+function parseCSV(text) {
+  const rows = [];
+  let row = [], cur = '', inQuote = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQuote) {
+      if (c === '"') {
+        if (text[i + 1] === '"') { cur += '"'; i++; }
+        else inQuote = false;
+      } else cur += c;
+    } else {
+      if (c === '"') inQuote = true;
+      else if (c === ',') { row.push(cur); cur = ''; }
+      else if (c === '\n') { row.push(cur); rows.push(row); row = []; cur = ''; }
+      else if (c === '\r') { /* skip */ }
+      else cur += c;
+    }
+  }
+  if (cur !== '' || row.length) { row.push(cur); rows.push(row); }
+  return rows;
+}
+
+function buildRecords(csvText) {
+  const rows = [];
+  for (const raw of parseCSV(csvText)) {
+    while (raw.length < 9) raw.push('');
+    // 有效行判定只看第 1 列及之后（第 0 列是台账自填的行号，占位行也有）
+    if (raw.slice(1, 9).every(c => c.trim() === '')) continue;
+    const rec = {};
+    COLUMNS.forEach((col, i) => { rec[col] = (raw[i] || '').trim(); });
+    rows.push(rec);
+  }
+  return rows;
+}
+
+// ── KPI ─────────────────────────────────
+function daysAgoLabel(n) {
+  const d = new Date(); d.setDate(d.getDate() - n);
+  return `${d.getMonth() + 1}.${d.getDate()}`;
+}
+
+function computeSummary(rows) {
+  const now = new Date();
+  const todayTs = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const weekStartTs = todayTs - 6 * 86400000;
+  // col6=留资方式（空/否=未留），col7=是否进私域
+  const hasLead = r => { const v = r.retained.trim(); return v && !/^(否|无)$/.test(v); };
+  const today = rows.filter(r => { const dt = parseDate(r.date); return dt && dt.getTime() === todayTs; }).length;
+  const week = rows.filter(r => { const dt = parseDate(r.date); return dt && dt.getTime() >= weekStartTs && dt.getTime() <= todayTs; }).length;
+  const sorted = [...rows].sort((a, b) => dateNum(b.date) - dateNum(a.date));
+  return {
+    total: rows.length,
+    retained: rows.filter(hasLead).length,
+    in_private: rows.filter(r => isYes(r.in_private)).length,
+    today_new: today,
+    week_new: week,
+    latest_date: sorted.length ? sorted[0].date : '—',
+  };
+}
+
+function renderKPI(summary) {
+  document.getElementById('kpiTotal').textContent = summary.total;
+  document.getElementById('kpiTotalSub').innerHTML = `近7天 <b>${summary.week_new}</b>`;
+  document.getElementById('kpiRetained').textContent = summary.retained;
+  document.getElementById('kpiRetainedRate').textContent = summary.total ? Math.round(summary.retained / summary.total * 100) + '%' : '—';
+  document.getElementById('kpiPrivate').textContent = summary.in_private;
+  document.getElementById('kpiPrivateRate').textContent = summary.total ? Math.round(summary.in_private / summary.total * 100) + '%' : '—';
+  document.getElementById('kpiToday').textContent = summary.today_new;
+  document.getElementById('kpiTodaySub').innerHTML = `最近记录 <b>${summary.latest_date}</b>`;
+}
+
+// 转化判定统一口径：
+// col6 = 留资方式（空/「否」= 未留资，其余如「是 182****」「xy****88」= 已留资）
+// col7 = 是否进私域（非「否」且非空 = 已进）
+const isYes = v => v.trim() && !v.includes('否');
+const hasLead = v => { const t = v.trim(); return t && !/^(否|无)$/.test(t); };
+
+// ── 筛选 ────────────────────────────────
+function applyFilters() {
+  const channel = document.getElementById('filterChannel').value;
+  const source = document.getElementById('filterSource').value;
+  const retained = document.getElementById('filterRetained').value;
+  const priv = document.getElementById('filterPrivate').value;
+  const keyword = document.getElementById('filterKeyword').value.toLowerCase().trim();
+
+  filteredData = allData.filter(row => {
+    if (channel && !row.action.includes(channel)) return false;
+    if (source === 'douyin' && !row.source_douyin) return false;
+    if (source === 'wechat' && !row.source_wechat) return false;
+    if (retained === 'yes' && !hasLead(row.retained)) return false;
+    if (retained === 'no' && hasLead(row.retained)) return false;
+    if (priv === 'yes' && !isYes(row.in_private)) return false;
+    if (priv === 'no' && isYes(row.in_private)) return false;
+    if (keyword) {
+      const haystack = [row.source_douyin, row.source_wechat, row.action, row.remark].join(' ').toLowerCase();
+      if (!haystack.includes(keyword)) return false;
+    }
+    return true;
+  });
+  renderTable();
+}
+
+function resetFilters() {
+  document.getElementById('filterChannel').value = '';
+  document.getElementById('filterSource').value = '';
+  document.getElementById('filterRetained').value = '';
+  document.getElementById('filterPrivate').value = '';
+  document.getElementById('filterKeyword').value = '';
+  filteredData = [...allData];
+  renderTable();
+}
+
+// ── 排序 ────────────────────────────────
+function toggleSort() {
+  sortDesc = !sortDesc;
+  document.getElementById('sortIndicator').textContent = sortDesc ? '▼' : '▲';
+  renderTable();
+}
+
+// ── 表格 ────────────────────────────────
+function renderTable() {
+  const tbody = document.getElementById('tableBody');
+  const data = [...filteredData].sort((a, b) => sortDesc ? dateNum(b.date) - dateNum(a.date) : dateNum(a.date) - dateNum(b.date));
+
+  if (data.length === 0) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="8">暂无符合条件的客资数据</td></tr>';
+    document.getElementById('tableCount').textContent = '0';
+    return;
+  }
+
+  let html = '';
+  for (const row of data) {
+    let tags = '';
+    if (row.source_douyin) tags += `<span class="tag tag-douyin">${escapeHtml(row.source_douyin)}</span> `;
+    if (row.source_wechat) tags += `<span class="tag tag-wechat">${escapeHtml(row.source_wechat)}</span> `;
+
+    const retainedBadge = hasLead(row.retained)
+      ? '<span class="badge badge-yes">已留</span>'
+      : '<span class="badge badge-no">未留</span>';
+    const privateBadge = isYes(row.in_private)
+      ? '<span class="badge badge-yes">已进</span>'
+      : '<span class="badge badge-no">未进</span>';
+
+    const actionText = row.action.trim() || '—';
+    const channelTag = row.action.trim()
+      ? `<span class="tag ${row.action.includes('小店') ? 'tag-wechat' : 'tag-douyin'}">${escapeHtml(actionText)}</span>`
+      : '<span style="color:var(--text-muted)">—</span>';
+
+    html += `<tr>
+      <td>${escapeHtml(row.seq)}</td>
+      <td>${escapeHtml(row.date)}</td>
+      <td>${escapeHtml(row.weekday)}</td>
+      <td>${tags || '<span style="color:var(--text-muted)">—</span>'}</td>
+      <td>${channelTag}</td>
+      <td>${retainedBadge}</td>
+      <td>${privateBadge}</td>
+      <td>${escapeHtml(row.remark) || '<span style="color:var(--text-muted)">—</span>'}</td>
+    </tr>`;
+  }
+  tbody.innerHTML = html;
+  document.getElementById('tableCount').textContent = data.length;
+}
+
+// ── 趋势图 ──────────────────────────────
+function setRange(days, btn) {
+  chartDays = days;
+  document.querySelectorAll('.range-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderChart();
+}
+
+function renderChart() {
+  const svg = document.getElementById('trendChart');
+  const today = new Date();
+  const days = [];
+  for (let i = chartDays - 1; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const m = d.getMonth() + 1, day = d.getDate();
+    days.push({ label: `${m}.${day}`, shortLabel: `${m}/${day}`, ts: new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime(), count: 0 });
+  }
+  for (const row of allData) {
+    const dt = parseDate(row.date);
+    if (!dt) continue;
+    for (const day of days) {
+      if (dt.getTime() === day.ts) day.count++;
+    }
+  }
+
+  const maxCount = Math.max(...days.map(d => d.count), 1);
+  const svgW = 680, chartHeight = 140, chartTop = 30, chartLeft = 40;
+  const plotW = svgW - chartLeft - 20;
+  const barSlot = plotW / days.length;
+  const barWidth = Math.max(Math.min(barSlot - 8, 46), 3);
+  const dense = chartDays > 30;   // 长区间：隐藏柱顶数字、标签间隔加大
+  const labelStep = chartDays <= 14 ? 1 : (chartDays <= 30 ? 2 : Math.ceil(chartDays / 15));
+  let s = '';
+
+  s += `<line x1="${chartLeft}" y1="${chartTop}" x2="${chartLeft}" y2="${chartTop + chartHeight}" stroke="#e9ecef" stroke-width="1"/>`;
+  s += `<line x1="${chartLeft}" y1="${chartTop + chartHeight}" x2="${chartLeft + plotW}" y2="${chartTop + chartHeight}" stroke="#e9ecef" stroke-width="1"/>`;
+
+  const ticks = Math.min(maxCount, 5);
+  for (let i = 0; i <= ticks; i++) {
+    const y = chartTop + chartHeight - (i / ticks) * chartHeight;
+    const label = Math.round(i * maxCount / ticks);
+    if (label === 0) continue;
+    s += `<line x1="${chartLeft - 4}" y1="${y}" x2="${chartLeft}" y2="${y}" stroke="#adb5bd" stroke-width="1"/>`;
+    s += `<text x="${chartLeft - 8}" y="${y + 4}" text-anchor="end" font-size="10" fill="#adb5bd">${label}</text>`;
+  }
+
+  days.forEach((day, i) => {
+    const barHeight = day.count > 0 ? (day.count / maxCount) * chartHeight : 2;
+    const x = chartLeft + i * barSlot + (barSlot - barWidth) / 2;
+    const y = chartTop + chartHeight - barHeight;
+    s += `<rect x="${x}" y="${y}" width="${barWidth}" height="${barHeight}" rx="${dense ? 1 : 4}" fill="${day.count > 0 ? '#6366f1' : '#e9ecef'}"><title>${day.label}：${day.count} 条</title></rect>`;
+    if (day.count > 0 && !dense) {
+      s += `<text x="${x + barWidth / 2}" y="${y - 6}" text-anchor="middle" font-size="12" font-weight="600" fill="#6366f1">${day.count}</text>`;
+    }
+    if (i % labelStep === 0 || i === days.length - 1) {
+      s += `<text x="${x + barWidth / 2}" y="${chartTop + chartHeight + 18}" text-anchor="middle" font-size="${dense ? 9 : (chartDays > 14 ? 9 : 11)}" fill="#6c757d">${day.shortLabel}</text>`;
+    }
+  });
+
+  svg.innerHTML = s;
+}
+
+// ── 分布条 ──────────────────────────────
+function renderDist(elId, counter, colors) {
+  const el = document.getElementById(elId);
+  const entries = [...counter.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6);
+  if (entries.length === 0) {
+    el.innerHTML = '<div style="color:var(--text-muted);font-size:13px;">暂无数据</div>';
+    return;
+  }
+  const max = entries[0][1];
+  el.innerHTML = entries.map(([name, val], i) => `
+    <div class="dist-row">
+      <span class="dist-name" title="${escapeHtml(name)}">${escapeHtml(name)}</span>
+      <span class="dist-bar"><span class="dist-bar-fill" style="width:${Math.max(val / max * 100, 4)}%;background:${colors[i % colors.length]}"></span></span>
+      <span class="dist-val">${val}</span>
+    </div>`).join('');
+}
+
+function renderDistributions() {
+  // 左卡：来源渠道分布（直播间 / 微信小店 / 未标注）
+  const channelCounter = new Map();
+  for (const r of allData) {
+    const act = r.action.trim();
+    const name = act || '未标注';
+    channelCounter.set(name, (channelCounter.get(name) || 0) + 1);
+  }
+  renderDist('sourceDist', channelCounter, ['#6366f1', '#f97316', '#22c55e', '#ef4444', '#0ea5e9', '#a855f7']);
+
+  // 右卡：留资方式分布（手机号 / 微信号 / 主动引导跟进 / 未留）
+  const way = new Map();
+  way.set('手机号留资', 0); way.set('微信号留资', 0); way.set('粉丝群引导', 0); way.set('私信引导', 0); way.set('未留资', 0);
+  for (const r of allData) {
+    const v = r.retained.trim();
+    if (!v) way.set('未留资', way.get('未留资') + 1);
+    else if (v.startsWith('是') || /\d{4}/.test(v)) way.set('手机号留资', way.get('手机号留资') + 1);
+    else if (/^[A-Za-z]/.test(v)) way.set('微信号留资', way.get('微信号留资') + 1);
+    else if (v.includes('留言')) way.set('粉丝群引导', way.get('粉丝群引导') + 1);
+    else if (v.includes('私信')) way.set('私信引导', way.get('私信引导') + 1);
+    else way.set('未留资', way.get('未留资') + 1);
+  }
+  renderDist('actionDist', way, ['#6366f1', '#22c55e', '#f97316', '#0ea5e9', '#adb5bd']);
+}
+
+// ── 导出 / 复制 ─────────────────────────
+function currentData() {
+  return filteredData.length > 0 ? filteredData : allData;
+}
+
+function exportCSV() {
+  const data = currentData();
+  if (!data.length) return showToast('没有数据可导出', 'error');
+  const headers = ['序号','日期','星期','抖音来源','微信来源','流转动作','是否留资','是否进私域','备注'];
+  let csv = headers.join(',') + '\n';
+  for (const row of data) {
+    const cells = COLUMNS.map(c => row[c]);
+    csv += cells.map(c => '"' + (c || '').replace(/"/g, '""') + '"').join(',') + '\n';
+  }
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `客资流转_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('CSV 已导出', 'success');
+}
+
+async function copyData() {
+  const data = currentData();
+  if (!data.length) return showToast('没有数据可复制', 'error');
+  const headers = ['序号','日期','星期','抖音来源','微信来源','流转动作','是否留资','是否进私域','备注'];
+  const lines = [headers.join('\t')];
+  for (const row of data) lines.push(COLUMNS.map(c => row[c]).join('\t'));
+  try {
+    await navigator.clipboard.writeText(lines.join('\n'));
+    showToast('数据已复制到剪贴板', 'success');
+  } catch (e) {
+    showToast('复制失败: ' + e.message, 'error');
+  }
+}
+
+function showToast(msg, type) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = 'toast toast-' + (type || 'success');
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── 初始化 ──────────────────────────────
+(function init() {
+  const snap = window.__SNAPSHOT__;
+  if (!snap || !snap.csv) {
+    document.getElementById('tableBody').innerHTML =
+      '<tr class="empty-row"><td colspan="8">数据快照未生成，请稍后再试</td></tr>';
+    return;
+  }
+  allData = buildRecords(snap.csv);
+  filteredData = [...allData];
+  document.getElementById('updateTime').textContent = '数据快照更新于 ' + snap.updated_at;
+  renderKPI(computeSummary(allData));
+  renderTable();
+  renderChart();
+  renderDistributions();
+})();
+</script>
+</body>
+</html>
