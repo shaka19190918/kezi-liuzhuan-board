@@ -198,6 +198,18 @@ body {
 .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
 .badge-yes { background: var(--green-light); color: #15803d; }
 .badge-no { background: #f1f3f5; color: var(--text-muted); }
+.contact-masked {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12.5px;
+  letter-spacing: 0.2px;
+  color: #334155;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 2px 7px;
+  display: inline-block;
+  cursor: default;
+}
 .empty-row td { text-align: center; padding: 40px; color: var(--text-muted); }
 
 /* ── 趋势图 ── */
@@ -403,7 +415,6 @@ footer {
     <div class="table-header">
       <h2>客资明细 (<span id="tableCount">0</span> 条)</h2>
       <div class="table-actions">
-        <button class="btn btn-outline btn-sm" onclick="exportCSV()">导出CSV</button>
         <button class="btn btn-outline btn-sm" onclick="copyData()">复制数据</button>
       </div>
     </div>
@@ -416,13 +427,14 @@ footer {
             <th style="width:50px;">星期</th>
             <th>客资来源</th>
             <th style="width:100px;">渠道</th>
-            <th style="width:80px;">留资</th>
+            <th style="width:135px;">手机号</th>
+            <th style="width:120px;">微信号</th>
             <th style="width:80px;">私域</th>
             <th>备注</th>
           </tr>
         </thead>
         <tbody id="tableBody">
-          <tr class="empty-row"><td colspan="8">加载中...</td></tr>
+          <tr class="empty-row"><td colspan="9">加载中...</td></tr>
         </tbody>
       </table>
     </div>
@@ -441,7 +453,11 @@ let filteredData = [];
 let sortDesc = true;   // 默认最新在前
 let chartDays = 14;    // 默认近14天
 
-const COLUMNS = ['seq','date','weekday','source_douyin','source_wechat','action','retained','in_private','remark'];
+// 台账列序（refresh.py 输出 11 列）：
+// 0 行号 | 1 日期 | 2 星期 | 3 抖音 | 4 微信 | 5 渠道 | 6 留资方式
+// 7 留资类型(P手机/W微信/G引导/空未留) | 8 联系方式(脱敏) | 9 是否进私域 | 10 备注
+const CONTACT_KINDS = ['P', 'W', 'G'];
+const COLUMNS = ['seq','date','weekday','source_douyin','source_wechat','action','retained','contact_kind','contact','in_private','remark'];
 
 // 「M.D」格式日期 → Date 对象（跨年自动回退：未来日期视为去年）
 function parseDate(s) {
@@ -483,10 +499,17 @@ function parseCSV(text) {
 
 function buildRecords(csvText) {
   const rows = [];
-  for (const raw of parseCSV(csvText)) {
-    while (raw.length < 9) raw.push('');
+  for (const parsed of parseCSV(csvText)) {
+    let raw = parsed;
+    while (raw.length < 11) raw.push('');
+    // 兼容旧的 9 列快照：若第 7 列不是 phone/wechat/guide，则整行右移一位
+    const kind = (raw[7] || '').trim();
+    if (!CONTACT_KINDS.includes(kind)) {
+      raw = raw.slice(0, 7).concat(['', '', raw[7] || ''], raw.slice(8));
+      while (raw.length < 11) raw.push('');
+    }
     // 有效行判定只看第 1 列及之后（第 0 列是台账自填的行号，占位行也有）
-    if (raw.slice(1, 9).every(c => c.trim() === '')) continue;
+    if (raw.slice(1, 10).every(c => c.trim() === '')) continue;
     const rec = {};
     COLUMNS.forEach((col, i) => { rec[col] = (raw[i] || '').trim(); });
     rows.push(rec);
@@ -505,7 +528,7 @@ function computeSummary(rows) {
   const todayTs = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
   const weekStartTs = todayTs - 6 * 86400000;
   // col6=留资方式（空/否=未留），col7=是否进私域
-  const hasLead = r => { const v = r.retained.trim(); return v && !/^(否|无)$/.test(v); };
+  const hasLead = r => CONTACT_KINDS.includes(r.contact_kind);
   const today = rows.filter(r => { const dt = parseDate(r.date); return dt && dt.getTime() === todayTs; }).length;
   const week = rows.filter(r => { const dt = parseDate(r.date); return dt && dt.getTime() >= weekStartTs && dt.getTime() <= todayTs; }).length;
   const sorted = [...rows].sort((a, b) => dateNum(b.date) - dateNum(a.date));
@@ -548,12 +571,12 @@ function applyFilters() {
     if (channel && !row.action.includes(channel)) return false;
     if (source === 'douyin' && !row.source_douyin) return false;
     if (source === 'wechat' && !row.source_wechat) return false;
-    if (retained === 'yes' && !hasLead(row.retained)) return false;
-    if (retained === 'no' && hasLead(row.retained)) return false;
+    if (retained === 'yes' && !row.contact_kind) return false;
+    if (retained === 'no' && row.contact_kind) return false;
     if (priv === 'yes' && !isYes(row.in_private)) return false;
     if (priv === 'no' && isYes(row.in_private)) return false;
     if (keyword) {
-      const haystack = [row.source_douyin, row.source_wechat, row.action, row.remark].join(' ').toLowerCase();
+      const haystack = [row.source_douyin, row.source_wechat, row.action, row.contact, row.retained, row.remark].join(' ').toLowerCase();
       if (!haystack.includes(keyword)) return false;
     }
     return true;
@@ -584,7 +607,7 @@ function renderTable() {
   const data = [...filteredData].sort((a, b) => sortDesc ? dateNum(b.date) - dateNum(a.date) : dateNum(a.date) - dateNum(b.date));
 
   if (data.length === 0) {
-    tbody.innerHTML = '<tr class="empty-row"><td colspan="8">暂无符合条件的客资数据</td></tr>';
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="9">暂无符合条件的客资数据</td></tr>';
     document.getElementById('tableCount').textContent = '0';
     return;
   }
@@ -595,9 +618,6 @@ function renderTable() {
     if (row.source_douyin) tags += `<span class="tag tag-douyin">${escapeHtml(row.source_douyin)}</span> `;
     if (row.source_wechat) tags += `<span class="tag tag-wechat">${escapeHtml(row.source_wechat)}</span> `;
 
-    const retainedBadge = hasLead(row.retained)
-      ? '<span class="badge badge-yes">已留</span>'
-      : '<span class="badge badge-no">未留</span>';
     const privateBadge = isYes(row.in_private)
       ? '<span class="badge badge-yes">已进</span>'
       : '<span class="badge badge-no">未进</span>';
@@ -607,13 +627,22 @@ function renderTable() {
       ? `<span class="tag ${row.action.includes('小店') ? 'tag-wechat' : 'tag-douyin'}">${escapeHtml(actionText)}</span>`
       : '<span style="color:var(--text-muted)">—</span>';
 
+    // 手机号 / 微信号 分列展示（均已脱敏，仅首尾可见）
+    const phoneCell = row.contact_kind === 'P' && row.contact
+      ? `<span class="contact-masked" title="已脱敏，完整号码请在腾讯文档台账查看">${escapeHtml(row.contact)}</span>`
+      : '<span style="color:var(--text-muted)">—</span>';
+    const wechatCell = row.contact_kind === 'W' && row.contact
+      ? `<span class="contact-masked" title="已脱敏，完整微信号请在腾讯文档台账查看">${escapeHtml(row.contact)}</span>`
+      : '<span style="color:var(--text-muted)">—</span>';
+
     html += `<tr>
       <td>${escapeHtml(row.seq)}</td>
       <td>${escapeHtml(row.date)}</td>
       <td>${escapeHtml(row.weekday)}</td>
       <td>${tags || '<span style="color:var(--text-muted)">—</span>'}</td>
       <td>${channelTag}</td>
-      <td>${retainedBadge}</td>
+      <td>${phoneCell}</td>
+      <td>${wechatCell}</td>
       <td>${privateBadge}</td>
       <td>${escapeHtml(row.remark) || '<span style="color:var(--text-muted)">—</span>'}</td>
     </tr>`;
@@ -712,49 +741,28 @@ function renderDistributions() {
   }
   renderDist('sourceDist', channelCounter, ['#6366f1', '#f97316', '#22c55e', '#ef4444', '#0ea5e9', '#a855f7']);
 
-  // 右卡：留资方式分布（手机号 / 微信号 / 主动引导跟进 / 未留）
+  // 右卡：留资方式分布（手机号 / 微信号 / 引导动作 / 未留）
   const way = new Map();
-  way.set('手机号留资', 0); way.set('微信号留资', 0); way.set('粉丝群引导', 0); way.set('私信引导', 0); way.set('未留资', 0);
+  way.set('手机号留资', 0); way.set('微信号留资', 0); way.set('引导跟进', 0); way.set('未留资', 0);
   for (const r of allData) {
-    const v = r.retained.trim();
-    if (!v) way.set('未留资', way.get('未留资') + 1);
-    else if (v.startsWith('是') || /\d{4}/.test(v)) way.set('手机号留资', way.get('手机号留资') + 1);
-    else if (/^[A-Za-z]/.test(v)) way.set('微信号留资', way.get('微信号留资') + 1);
-    else if (v.includes('留言')) way.set('粉丝群引导', way.get('粉丝群引导') + 1);
-    else if (v.includes('私信')) way.set('私信引导', way.get('私信引导') + 1);
+    const kind = r.contact_kind.trim();
+    if (kind === 'P') way.set('手机号留资', way.get('手机号留资') + 1);
+    else if (kind === 'W') way.set('微信号留资', way.get('微信号留资') + 1);
+    else if (kind === 'G') way.set('引导跟进', way.get('引导跟进') + 1);
     else way.set('未留资', way.get('未留资') + 1);
   }
-  renderDist('actionDist', way, ['#6366f1', '#22c55e', '#f97316', '#0ea5e9', '#adb5bd']);
+  renderDist('actionDist', way, ['#6366f1', '#22c55e', '#f97316', '#adb5bd']);
 }
 
-// ── 导出 / 复制 ─────────────────────────
+// ── 复制 ────────────────────────────────
 function currentData() {
   return filteredData.length > 0 ? filteredData : allData;
-}
-
-function exportCSV() {
-  const data = currentData();
-  if (!data.length) return showToast('没有数据可导出', 'error');
-  const headers = ['序号','日期','星期','抖音来源','微信来源','流转动作','是否留资','是否进私域','备注'];
-  let csv = headers.join(',') + '\n';
-  for (const row of data) {
-    const cells = COLUMNS.map(c => row[c]);
-    csv += cells.map(c => '"' + (c || '').replace(/"/g, '""') + '"').join(',') + '\n';
-  }
-  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `客资流转_${new Date().toISOString().slice(0,10)}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
-  showToast('CSV 已导出', 'success');
 }
 
 async function copyData() {
   const data = currentData();
   if (!data.length) return showToast('没有数据可复制', 'error');
-  const headers = ['序号','日期','星期','抖音来源','微信来源','流转动作','是否留资','是否进私域','备注'];
+  const headers = ['序号','日期','星期','抖音来源','微信来源','渠道','留资方式','留资类型','手机号/微信号(脱敏)','是否进私域','备注'];
   const lines = [headers.join('\t')];
   for (const row of data) lines.push(COLUMNS.map(c => row[c]).join('\t'));
   try {
@@ -783,7 +791,7 @@ function escapeHtml(str) {
   const snap = window.__SNAPSHOT__;
   if (!snap || !snap.csv) {
     document.getElementById('tableBody').innerHTML =
-      '<tr class="empty-row"><td colspan="8">数据快照未生成，请稍后再试</td></tr>';
+      '<tr class="empty-row"><td colspan="9">数据快照未生成，请稍后再试</td></tr>';
     return;
   }
   allData = buildRecords(snap.csv);
