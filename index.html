@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>直播客资流转看板</title>
+<title>客户主表看板</title>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -78,8 +78,6 @@ body {
 }
 .btn-outline { background: transparent; color: var(--text-secondary); border: 1px solid var(--border); }
 .btn-outline:hover { background: var(--bg); }
-.btn-primary { background: var(--primary); color: white; }
-.btn-primary:hover { background: #5558e0; }
 .btn-sm { padding: 4px 10px; font-size: 12px; }
 
 /* ── 提示条 ── */
@@ -175,7 +173,7 @@ body {
 .data-table { width: 100%; border-collapse: collapse; }
 .data-table th {
   text-align: left;
-  padding: 10px 16px;
+  padding: 10px 14px;
   font-size: 12px;
   font-weight: 600;
   color: var(--text-secondary);
@@ -184,20 +182,29 @@ body {
   position: sticky;
   top: 0;
   z-index: 10;
+  white-space: nowrap;
 }
 .data-table td {
-  padding: 10px 16px;
+  padding: 10px 14px;
   border-bottom: 1px solid #f1f3f5;
   font-size: 13px;
+  vertical-align: top;
 }
-.data-table tbody tr:nth-child(even) { background: #fcfcfd; }
-.data-table tbody tr:hover { background: var(--primary-light); }
+.data-table tbody tr.main-row { cursor: pointer; }
+.data-table tbody tr.main-row:nth-child(even) { background: #fcfcfd; }
+.data-table tbody tr.main-row:hover { background: var(--primary-light); }
 .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; }
 .tag-douyin { background: var(--orange-light); color: #c2410c; }
 .tag-wechat { background: var(--green-light); color: #15803d; }
-.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; white-space: nowrap; }
 .badge-yes { background: var(--green-light); color: #15803d; }
 .badge-no { background: #f1f3f5; color: var(--text-muted); }
+.badge-stage { background: var(--primary-light); color: #4338ca; }
+.badge-lead { background: #f1f3f5; color: var(--text-secondary); }
+.badge-warn { background: var(--red-light); color: #b91c1c; }
+.badge-intent-a { background: var(--red-light); color: #b91c1c; }
+.badge-intent-b { background: var(--orange-light); color: #c2410c; }
+.badge-intent-c { background: #f1f3f5; color: var(--text-secondary); }
 .contact-masked {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 12.5px;
@@ -209,8 +216,30 @@ body {
   padding: 2px 7px;
   display: inline-block;
   cursor: default;
+  white-space: nowrap;
 }
 .empty-row td { text-align: center; padding: 40px; color: var(--text-muted); }
+
+/* ── 展开详情 ── */
+.detail-row td { background: #fafbff; padding: 14px 20px; }
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 8px 24px;
+}
+.detail-item { font-size: 12.5px; display: flex; gap: 8px; }
+.detail-item .k { color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
+.detail-item .v { color: var(--text); word-break: break-all; }
+.detail-seg {
+  grid-column: 1 / -1;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-top: 6px;
+  letter-spacing: 1px;
+}
+.caret { display: inline-block; transition: transform 0.15s; color: var(--text-muted); font-size: 11px; }
+tr.main-row.open .caret { transform: rotate(90deg); }
 
 /* ── 趋势图 ── */
 .chart-section {
@@ -231,7 +260,7 @@ body {
 .chart-container { width: 100%; overflow-x: auto; }
 .chart-svg { width: 100%; min-width: 500px; }
 
-/* ── 来源分布 ── */
+/* ── 分布 ── */
 .dist-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
 .dist-card {
   background: var(--card);
@@ -241,7 +270,7 @@ body {
 }
 .dist-card h2 { font-size: 15px; font-weight: 600; margin-bottom: 14px; }
 .dist-row { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; font-size: 13px; }
-.dist-name { width: 92px; flex-shrink: 0; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dist-name { width: 110px; flex-shrink: 0; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dist-bar { flex: 1; height: 18px; background: var(--bg); border-radius: 4px; overflow: hidden; }
 .dist-bar-fill { height: 100%; border-radius: 4px; }
 .dist-val { width: 32px; text-align: right; font-weight: 600; flex-shrink: 0; }
@@ -285,7 +314,7 @@ footer {
 <nav class="navbar">
   <div class="navbar-left">
     <div class="navbar-logo">客</div>
-    <h1>直播客资流转看板</h1>
+    <h1>客户主表看板</h1>
     <span class="readonly-badge">只读快照</span>
   </div>
   <div class="navbar-right">
@@ -295,7 +324,7 @@ footer {
 
 <div class="notice">
   <span>ℹ️</span>
-  <span>本页为<b>只读数据快照</b>，每日自动从腾讯文档台账同步一次。如需新增或修改客资，请在腾讯文档原表格中操作。</span>
+  <span>本页为<b>只读数据快照</b>，每日自动从腾讯文档「客户主表」同步一次。如需新增或修改，请在腾讯文档原表格中操作。</span>
 </div>
 
 <div class="container">
@@ -310,15 +339,7 @@ footer {
       </div>
     </div>
     <div class="kpi-card">
-      <div class="kpi-icon" style="background: var(--green-light); color: var(--green);">✓</div>
-      <div class="kpi-info">
-        <div class="kpi-value" id="kpiRetained">0</div>
-        <div class="kpi-label">已留资</div>
-        <div class="kpi-sub">留资率 <b id="kpiRetainedRate">0%</b></div>
-      </div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-icon" style="background: var(--orange-light); color: var(--orange);">🔒</div>
+      <div class="kpi-icon" style="background: var(--green-light); color: var(--green);">🔒</div>
       <div class="kpi-info">
         <div class="kpi-value" id="kpiPrivate">0</div>
         <div class="kpi-label">已进私域</div>
@@ -326,11 +347,19 @@ footer {
       </div>
     </div>
     <div class="kpi-card">
-      <div class="kpi-icon" style="background: var(--red-light); color: var(--red);">🔥</div>
+      <div class="kpi-icon" style="background: var(--orange-light); color: var(--orange);">📞</div>
       <div class="kpi-info">
-        <div class="kpi-value" id="kpiToday">0</div>
-        <div class="kpi-label">今日新增</div>
-        <div class="kpi-sub" id="kpiTodaySub">最近记录 <b>—</b></div>
+        <div class="kpi-value" id="kpiFollowing">0</div>
+        <div class="kpi-label">跟进中客户</div>
+        <div class="kpi-sub">已成单 <b id="kpiDone">0</b></div>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon" style="background: var(--red-light); color: var(--red);">⚠️</div>
+      <div class="kpi-info">
+        <div class="kpi-value" id="kpiWarn">0</div>
+        <div class="kpi-label">预警客户</div>
+        <div class="kpi-sub" id="kpiWarnSub">已交接未跟进 <b>0</b></div>
       </div>
     </div>
   </div>
@@ -341,26 +370,17 @@ footer {
       <span class="filter-label">渠道</span>
       <select class="filter-select" id="filterChannel" onchange="applyFilters()">
         <option value="">全部</option>
-        <option value="直播间">直播间</option>
-        <option value="微信小店">微信小店</option>
       </select>
     </div>
     <div class="filter-divider"></div>
     <div class="filter-group">
-      <span class="filter-label">平台</span>
-      <select class="filter-select" id="filterSource" onchange="applyFilters()">
+      <span class="filter-label">阶段</span>
+      <select class="filter-select" id="filterStage" onchange="applyFilters()">
         <option value="">全部</option>
-        <option value="douyin">抖音</option>
-        <option value="wechat">微信</option>
-      </select>
-    </div>
-    <div class="filter-divider"></div>
-    <div class="filter-group">
-      <span class="filter-label">留资</span>
-      <select class="filter-select" id="filterRetained" onchange="applyFilters()">
-        <option value="">全部</option>
-        <option value="yes">已留资</option>
-        <option value="no">未留资</option>
+        <option value="线索">线索</option>
+        <option value="跟进中">跟进中</option>
+        <option value="已交接未跟进">已交接未跟进</option>
+        <option value="已成单">已成单</option>
       </select>
     </div>
     <div class="filter-divider"></div>
@@ -374,8 +394,16 @@ footer {
     </div>
     <div class="filter-divider"></div>
     <div class="filter-group">
+      <span class="filter-label">预警</span>
+      <select class="filter-select" id="filterWarn" onchange="applyFilters()">
+        <option value="">全部</option>
+        <option value="yes">只看预警</option>
+      </select>
+    </div>
+    <div class="filter-divider"></div>
+    <div class="filter-group">
       <span class="filter-label">搜索</span>
-      <input type="text" class="filter-input" id="filterKeyword" placeholder="搜索昵称/动作/备注..." oninput="applyFilters()" style="width:200px;">
+      <input type="text" class="filter-input" id="filterKeyword" placeholder="搜索昵称/编号/备注..." oninput="applyFilters()" style="width:200px;">
     </div>
     <div class="filter-group" style="margin-left:auto;">
       <button class="btn btn-outline btn-sm" onclick="resetFilters()">重置</button>
@@ -385,11 +413,11 @@ footer {
   <!-- 趋势图 -->
   <div class="chart-section">
     <div class="chart-head">
-      <h2>客资趋势</h2>
+      <h2>线索趋势</h2>
       <div class="range-tabs">
         <button class="range-tab" data-days="7" onclick="setRange(7, this)">近7天</button>
-        <button class="range-tab active" data-days="14" onclick="setRange(14, this)">近14天</button>
-        <button class="range-tab" data-days="30" onclick="setRange(30, this)">近30天</button>
+        <button class="range-tab" data-days="14" onclick="setRange(14, this)">近14天</button>
+        <button class="range-tab active" data-days="30" onclick="setRange(30, this)">近30天</button>
         <button class="range-tab" data-days="365" onclick="setRange(365, this)">全部</button>
       </div>
     </div>
@@ -398,22 +426,22 @@ footer {
     </div>
   </div>
 
-  <!-- 渠道/转化分布 -->
+  <!-- 渠道/阶段分布 -->
   <div class="dist-grid">
     <div class="dist-card">
       <h2>来源渠道分布</h2>
       <div id="sourceDist"></div>
     </div>
     <div class="dist-card">
-      <h2>转化进度分布</h2>
-      <div id="actionDist"></div>
+      <h2>客户阶段分布</h2>
+      <div id="stageDist"></div>
     </div>
   </div>
 
   <!-- 表格 -->
   <div class="table-section">
     <div class="table-header">
-      <h2>客资明细 (<span id="tableCount">0</span> 条)</h2>
+      <h2>客户明细 (<span id="tableCount">0</span> 条) <span style="font-size:11px;color:var(--text-muted);font-weight:400;">点击行展开跟进详情</span></h2>
       <div class="table-actions">
         <button class="btn btn-outline btn-sm" onclick="copyData()">复制数据</button>
       </div>
@@ -422,26 +450,27 @@ footer {
       <table class="data-table">
         <thead>
           <tr>
-            <th style="width:50px;">序号</th>
-            <th style="width:70px;cursor:pointer;" onclick="toggleSort()" title="点击切换排序">日期 <span id="sortIndicator">▼</span></th>
-            <th style="width:50px;">星期</th>
-            <th>客资来源</th>
-            <th style="width:100px;">渠道</th>
-            <th style="width:135px;">手机号</th>
-            <th style="width:120px;">微信号</th>
-            <th style="width:80px;">私域</th>
-            <th>备注</th>
+            <th style="width:30px;"></th>
+            <th>客户编号</th>
+            <th style="cursor:pointer;" onclick="toggleSort()" title="点击切换排序">日期 <span id="sortIndicator">▼</span></th>
+            <th>昵称</th>
+            <th>渠道</th>
+            <th>联系方式</th>
+            <th>私域</th>
+            <th>意向</th>
+            <th>客户阶段</th>
+            <th>预警</th>
           </tr>
         </thead>
         <tbody id="tableBody">
-          <tr class="empty-row"><td colspan="9">加载中...</td></tr>
+          <tr class="empty-row"><td colspan="10">加载中...</td></tr>
         </tbody>
       </table>
     </div>
   </div>
 </div>
 
-<footer>数据快照由 WorkBuddy 每日自动同步 · 原始台账见腾讯文档「客资流转」<br>公网版已脱敏：手机号/微信号仅保留首尾片段，完整信息请在腾讯文档台账查看</footer>
+<footer>数据快照由 WorkBuddy 每日自动同步 · 原始数据见腾讯文档「客户主表」<br>公网版已脱敏：手机号/微信号仅保留首尾片段，完整信息请在腾讯文档查看</footer>
 
 <div class="toast" id="toast"></div>
 
@@ -451,22 +480,34 @@ footer {
 let allData = [];
 let filteredData = [];
 let sortDesc = true;   // 默认最新在前
-let chartDays = 14;    // 默认近14天
+let chartDays = 30;    // 默认近30天
+let openId = null;     // 当前展开的客户编号
 
-// 台账列序（refresh.py 输出 11 列）：
-// 0 行号 | 1 日期 | 2 星期 | 3 抖音 | 4 微信 | 5 渠道 | 6 留资方式
-// 7 留资类型(P手机/W微信/G引导/空未留) | 8 联系方式(脱敏) | 9 是否进私域 | 10 备注
-const CONTACT_KINDS = ['P', 'W', 'G'];
-const COLUMNS = ['seq','date','weekday','source_douyin','source_wechat','action','retained','contact_kind','contact','in_private','remark'];
+// 主表列序（refresh.py 输出 23 列，第 1 行是列头）：
+// 0 客户编号 | 1 线索日期 | 2 星期 | 3 抖音昵称 | 4 微信昵称 | 5 来源渠道
+// 6 留资方式 | 7 留资说明 | 8 是否进私域 | 9 联系方式 | 10 联系类型 | 11 意向等级
+// 12 首次添加时间 | 13 关注产品/服务 | 14 最近跟进日期 | 15 跟进方式 | 16 跟进内容摘要
+// 17 客户反馈 | 18 下次跟进日期 | 19 跟进状态 | 20 客户阶段 | 21 预警 | 22 备注
+const COLUMNS = ['id','date','weekday','nick_douyin','nick_wechat','channel','lead_way','lead_note',
+  'in_private','contact','contact_type','intent','first_add','product','last_follow','follow_way',
+  'follow_note','feedback','next_follow','follow_status','stage','warn','remark'];
+const HEADERS = ['客户编号','线索日期','星期','抖音昵称','微信昵称','来源渠道','留资方式','留资说明',
+  '是否进私域','联系方式','联系类型','意向等级','首次添加时间','关注产品/服务','最近跟进日期','跟进方式',
+  '跟进内容摘要','客户反馈','下次跟进日期','跟进状态','客户阶段','预警','备注'];
 
-// 「M.D」格式日期 → Date 对象（跨年自动回退：未来日期视为去年）
+// 日期解析：优先 YYYY-MM-DD，兼容 M.D / M/D
 function parseDate(s) {
-  const m = s.match(/^(\d{1,2})[.\/-](\d{1,2})$/);
-  if (!m) return null;
-  const now = new Date();
-  let dt = new Date(now.getFullYear(), parseInt(m[1], 10) - 1, parseInt(m[2], 10));
-  if (dt > new Date(now.getTime() + 86400000)) dt = new Date(now.getFullYear() - 1, parseInt(m[1], 10) - 1, parseInt(m[2], 10));
-  return dt;
+  if (!s) return null;
+  let m = s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
+  if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
+  m = s.match(/^(\d{1,2})[.\/-](\d{1,2})$/);
+  if (m) {
+    const now = new Date();
+    let dt = new Date(now.getFullYear(), +m[1] - 1, +m[2]);
+    if (dt > new Date(now.getTime() + 86400000)) dt = new Date(now.getFullYear() - 1, +m[1] - 1, +m[2]);
+    return dt;
+  }
+  return null;
 }
 
 function dateNum(s) {
@@ -498,85 +539,76 @@ function parseCSV(text) {
 }
 
 function buildRecords(csvText) {
-  const rows = [];
-  for (const parsed of parseCSV(csvText)) {
-    let raw = parsed;
-    while (raw.length < 11) raw.push('');
-    // 兼容旧的 9 列快照：若第 7 列不是 phone/wechat/guide，则整行右移一位
-    const kind = (raw[7] || '').trim();
-    if (!CONTACT_KINDS.includes(kind)) {
-      raw = raw.slice(0, 7).concat(['', '', raw[7] || ''], raw.slice(8));
-      while (raw.length < 11) raw.push('');
-    }
-    // 有效行判定只看第 1 列及之后（第 0 列是台账自填的行号，占位行也有）
-    if (raw.slice(1, 10).every(c => c.trim() === '')) continue;
+  const out = [];
+  for (const raw of parseCSV(csvText)) {
+    while (raw.length < 23) raw.push('');
+    if (raw[0].trim() === '客户编号') continue;   // 跳过列头行
+    if (raw.every(c => c.trim() === '')) continue;
     const rec = {};
     COLUMNS.forEach((col, i) => { rec[col] = (raw[i] || '').trim(); });
-    rows.push(rec);
+    out.push(rec);
   }
-  return rows;
+  return out;
 }
+
+const isYes = v => v.trim() === '是';
+const hasWarn = r => !!r.warn;
 
 // ── KPI ─────────────────────────────────
-function daysAgoLabel(n) {
-  const d = new Date(); d.setDate(d.getDate() - n);
-  return `${d.getMonth() + 1}.${d.getDate()}`;
-}
-
 function computeSummary(rows) {
   const now = new Date();
   const todayTs = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
   const weekStartTs = todayTs - 6 * 86400000;
-  // col6=留资方式（空/否=未留），col7=是否进私域
-  const hasLead = r => CONTACT_KINDS.includes(r.contact_kind);
-  const today = rows.filter(r => { const dt = parseDate(r.date); return dt && dt.getTime() === todayTs; }).length;
   const week = rows.filter(r => { const dt = parseDate(r.date); return dt && dt.getTime() >= weekStartTs && dt.getTime() <= todayTs; }).length;
-  const sorted = [...rows].sort((a, b) => dateNum(b.date) - dateNum(a.date));
   return {
     total: rows.length,
-    retained: rows.filter(hasLead).length,
     in_private: rows.filter(r => isYes(r.in_private)).length,
-    today_new: today,
+    following: rows.filter(r => r.stage === '跟进中').length,
+    done: rows.filter(r => r.follow_status === '已成单').length,
+    warn: rows.filter(hasWarn).length,
+    warn_unfollowed: rows.filter(r => r.warn.includes('无人跟进')).length,
     week_new: week,
-    latest_date: sorted.length ? sorted[0].date : '—',
   };
 }
 
-function renderKPI(summary) {
-  document.getElementById('kpiTotal').textContent = summary.total;
-  document.getElementById('kpiTotalSub').innerHTML = `近7天 <b>${summary.week_new}</b>`;
-  document.getElementById('kpiRetained').textContent = summary.retained;
-  document.getElementById('kpiRetainedRate').textContent = summary.total ? Math.round(summary.retained / summary.total * 100) + '%' : '—';
-  document.getElementById('kpiPrivate').textContent = summary.in_private;
-  document.getElementById('kpiPrivateRate').textContent = summary.total ? Math.round(summary.in_private / summary.total * 100) + '%' : '—';
-  document.getElementById('kpiToday').textContent = summary.today_new;
-  document.getElementById('kpiTodaySub').innerHTML = `最近记录 <b>${summary.latest_date}</b>`;
+function renderKPI(s) {
+  document.getElementById('kpiTotal').textContent = s.total;
+  document.getElementById('kpiTotalSub').innerHTML = `近7天 <b>${s.week_new}</b>`;
+  document.getElementById('kpiPrivate').textContent = s.in_private;
+  document.getElementById('kpiPrivateRate').textContent = s.total ? Math.round(s.in_private / s.total * 100) + '%' : '—';
+  document.getElementById('kpiFollowing').textContent = s.following;
+  document.getElementById('kpiDone').textContent = s.done;
+  document.getElementById('kpiWarn').textContent = s.warn;
+  document.getElementById('kpiWarnSub').innerHTML = `已交接未跟进 <b>${s.warn_unfollowed}</b>`;
 }
 
-// 转化判定统一口径：
-// col6 = 留资方式（空/「否」= 未留资，其余如「是 182****」「xy****88」= 已留资）
-// col7 = 是否进私域（非「否」且非空 = 已进）
-const isYes = v => v.trim() && !v.includes('否');
-const hasLead = v => { const t = v.trim(); return t && !/^(否|无)$/.test(t); };
-
 // ── 筛选 ────────────────────────────────
+function fillChannelOptions() {
+  const sel = document.getElementById('filterChannel');
+  const set = new Set(allData.map(r => r.channel).filter(Boolean));
+  [...set].sort().forEach(c => {
+    const op = document.createElement('option');
+    op.value = c; op.textContent = c;
+    sel.appendChild(op);
+  });
+}
+
 function applyFilters() {
   const channel = document.getElementById('filterChannel').value;
-  const source = document.getElementById('filterSource').value;
-  const retained = document.getElementById('filterRetained').value;
+  const stage = document.getElementById('filterStage').value;
   const priv = document.getElementById('filterPrivate').value;
+  const warn = document.getElementById('filterWarn').value;
   const keyword = document.getElementById('filterKeyword').value.toLowerCase().trim();
 
-  filteredData = allData.filter(row => {
-    if (channel && !row.action.includes(channel)) return false;
-    if (source === 'douyin' && !row.source_douyin) return false;
-    if (source === 'wechat' && !row.source_wechat) return false;
-    if (retained === 'yes' && !row.contact_kind) return false;
-    if (retained === 'no' && row.contact_kind) return false;
-    if (priv === 'yes' && !isYes(row.in_private)) return false;
-    if (priv === 'no' && isYes(row.in_private)) return false;
+  filteredData = allData.filter(r => {
+    if (channel && r.channel !== channel) return false;
+    if (stage === '已交接未跟进' && !r.stage.includes('已交接未跟进')) return false;
+    else if (stage && stage !== '已交接未跟进' && r.stage !== stage) return false;
+    if (priv === 'yes' && !isYes(r.in_private)) return false;
+    if (priv === 'no' && isYes(r.in_private)) return false;
+    if (warn === 'yes' && !hasWarn(r)) return false;
     if (keyword) {
-      const haystack = [row.source_douyin, row.source_wechat, row.action, row.contact, row.retained, row.remark].join(' ').toLowerCase();
+      const haystack = [r.id, r.nick_douyin, r.nick_wechat, r.channel, r.remark, r.follow_note, r.product].join(' ').toLowerCase();
       if (!haystack.includes(keyword)) return false;
     }
     return true;
@@ -586,9 +618,9 @@ function applyFilters() {
 
 function resetFilters() {
   document.getElementById('filterChannel').value = '';
-  document.getElementById('filterSource').value = '';
-  document.getElementById('filterRetained').value = '';
+  document.getElementById('filterStage').value = '';
   document.getElementById('filterPrivate').value = '';
+  document.getElementById('filterWarn').value = '';
   document.getElementById('filterKeyword').value = '';
   filteredData = [...allData];
   renderTable();
@@ -602,50 +634,82 @@ function toggleSort() {
 }
 
 // ── 表格 ────────────────────────────────
+function intentBadge(v) {
+  if (!v) return '<span style="color:var(--text-muted)">—</span>';
+  const cls = v === 'A' ? 'badge-intent-a' : (v === 'B' ? 'badge-intent-b' : 'badge-intent-c');
+  return `<span class="badge ${cls}">${escapeHtml(v)} 级</span>`;
+}
+
+function stageBadge(v) {
+  if (!v) return '<span style="color:var(--text-muted)">—</span>';
+  if (v.includes('未跟进')) return `<span class="badge badge-warn">${escapeHtml(v)}</span>`;
+  if (v === '线索') return `<span class="badge badge-lead">${escapeHtml(v)}</span>`;
+  return `<span class="badge badge-stage">${escapeHtml(v)}</span>`;
+}
+
+function toggleDetail(id) {
+  openId = (openId === id) ? null : id;
+  renderTable();
+}
+
+function detailHtml(r) {
+  const item = (k, v) => `<div class="detail-item"><span class="k">${k}</span><span class="v">${v ? escapeHtml(v) : '—'}</span></div>`;
+  return `<tr class="detail-row"><td colspan="10"><div class="detail-grid">
+    <div class="detail-seg">① 流量段（直播组填写）</div>
+    ${item('留资方式', r.lead_way)}${item('留资说明', r.lead_note)}${item('来源渠道', r.channel)}
+    <div class="detail-seg">② 交接段</div>
+    ${item('联系方式', r.contact)}${item('联系类型', r.contact_type)}${item('首次添加时间', r.first_add)}
+    <div class="detail-seg">③ 销售段（销售填写）</div>
+    ${item('意向等级', r.intent)}${item('关注产品/服务', r.product)}${item('最近跟进日期', r.last_follow)}
+    ${item('跟进方式', r.follow_way)}${item('跟进状态', r.follow_status)}${item('下次跟进日期', r.next_follow)}
+    ${item('跟进内容摘要', r.follow_note)}${item('客户反馈', r.feedback)}
+    <div class="detail-seg">④ 其他</div>
+    ${item('备注', r.remark)}
+  </div></td></tr>`;
+}
+
 function renderTable() {
   const tbody = document.getElementById('tableBody');
   const data = [...filteredData].sort((a, b) => sortDesc ? dateNum(b.date) - dateNum(a.date) : dateNum(a.date) - dateNum(b.date));
 
   if (data.length === 0) {
-    tbody.innerHTML = '<tr class="empty-row"><td colspan="9">暂无符合条件的客资数据</td></tr>';
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="10">暂无符合条件的客户数据</td></tr>';
     document.getElementById('tableCount').textContent = '0';
     return;
   }
 
   let html = '';
-  for (const row of data) {
-    let tags = '';
-    if (row.source_douyin) tags += `<span class="tag tag-douyin">${escapeHtml(row.source_douyin)}</span> `;
-    if (row.source_wechat) tags += `<span class="tag tag-wechat">${escapeHtml(row.source_wechat)}</span> `;
+  for (const r of data) {
+    let nicks = '';
+    if (r.nick_douyin) nicks += `<span class="tag tag-douyin">${escapeHtml(r.nick_douyin)}</span> `;
+    if (r.nick_wechat) nicks += `<span class="tag tag-wechat">${escapeHtml(r.nick_wechat)}</span> `;
 
-    const privateBadge = isYes(row.in_private)
+    const privateBadge = isYes(r.in_private)
       ? '<span class="badge badge-yes">已进</span>'
       : '<span class="badge badge-no">未进</span>';
 
-    const actionText = row.action.trim() || '—';
-    const channelTag = row.action.trim()
-      ? `<span class="tag ${row.action.includes('小店') ? 'tag-wechat' : 'tag-douyin'}">${escapeHtml(actionText)}</span>`
+    const contactCell = r.contact
+      ? `<span class="contact-masked" title="已脱敏，完整信息请在腾讯文档查看">${escapeHtml(r.contact)}</span>`
       : '<span style="color:var(--text-muted)">—</span>';
 
-    // 手机号 / 微信号 分列展示（均已脱敏，仅首尾可见）
-    const phoneCell = row.contact_kind === 'P' && row.contact
-      ? `<span class="contact-masked" title="已脱敏，完整号码请在腾讯文档台账查看">${escapeHtml(row.contact)}</span>`
-      : '<span style="color:var(--text-muted)">—</span>';
-    const wechatCell = row.contact_kind === 'W' && row.contact
-      ? `<span class="contact-masked" title="已脱敏，完整微信号请在腾讯文档台账查看">${escapeHtml(row.contact)}</span>`
+    const warnCell = r.warn
+      ? `<span class="badge badge-warn">${escapeHtml(r.warn)}</span>`
       : '<span style="color:var(--text-muted)">—</span>';
 
-    html += `<tr>
-      <td>${escapeHtml(row.seq)}</td>
-      <td>${escapeHtml(row.date)}</td>
-      <td>${escapeHtml(row.weekday)}</td>
-      <td>${tags || '<span style="color:var(--text-muted)">—</span>'}</td>
-      <td>${channelTag}</td>
-      <td>${phoneCell}</td>
-      <td>${wechatCell}</td>
+    const open = openId === r.id;
+    html += `<tr class="main-row${open ? ' open' : ''}" onclick="toggleDetail('${escapeHtml(r.id)}')">
+      <td><span class="caret">▶</span></td>
+      <td style="font-family:ui-monospace,monospace;font-size:12px;">${escapeHtml(r.id)}</td>
+      <td style="white-space:nowrap;">${escapeHtml(r.date)}${r.weekday ? ' ' + escapeHtml(r.weekday) : ''}</td>
+      <td>${nicks || '<span style="color:var(--text-muted)">—</span>'}</td>
+      <td>${escapeHtml(r.channel) || '<span style="color:var(--text-muted)">—</span>'}</td>
+      <td>${contactCell}</td>
       <td>${privateBadge}</td>
-      <td>${escapeHtml(row.remark) || '<span style="color:var(--text-muted)">—</span>'}</td>
+      <td>${intentBadge(r.intent)}</td>
+      <td>${stageBadge(r.stage)}</td>
+      <td>${warnCell}</td>
     </tr>`;
+    if (open) html += detailHtml(r);
   }
   tbody.innerHTML = html;
   document.getElementById('tableCount').textContent = data.length;
@@ -669,8 +733,8 @@ function renderChart() {
     const m = d.getMonth() + 1, day = d.getDate();
     days.push({ label: `${m}.${day}`, shortLabel: `${m}/${day}`, ts: new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime(), count: 0 });
   }
-  for (const row of allData) {
-    const dt = parseDate(row.date);
+  for (const r of allData) {
+    const dt = parseDate(r.date);
     if (!dt) continue;
     for (const day of days) {
       if (dt.getTime() === day.ts) day.count++;
@@ -682,7 +746,7 @@ function renderChart() {
   const plotW = svgW - chartLeft - 20;
   const barSlot = plotW / days.length;
   const barWidth = Math.max(Math.min(barSlot - 8, 46), 3);
-  const dense = chartDays > 30;   // 长区间：隐藏柱顶数字、标签间隔加大
+  const dense = chartDays > 30;
   const labelStep = chartDays <= 14 ? 1 : (chartDays <= 30 ? 2 : Math.ceil(chartDays / 15));
   let s = '';
 
@@ -717,7 +781,7 @@ function renderChart() {
 // ── 分布条 ──────────────────────────────
 function renderDist(elId, counter, colors) {
   const el = document.getElementById(elId);
-  const entries = [...counter.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6);
+  const entries = [...counter.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8);
   if (entries.length === 0) {
     el.innerHTML = '<div style="color:var(--text-muted);font-size:13px;">暂无数据</div>';
     return;
@@ -732,39 +796,29 @@ function renderDist(elId, counter, colors) {
 }
 
 function renderDistributions() {
-  // 左卡：来源渠道分布（直播间 / 微信小店 / 未标注）
+  // 左卡：来源渠道分布
   const channelCounter = new Map();
   for (const r of allData) {
-    const act = r.action.trim();
-    const name = act || '未标注';
+    const name = r.channel || '未标注';
     channelCounter.set(name, (channelCounter.get(name) || 0) + 1);
   }
   renderDist('sourceDist', channelCounter, ['#6366f1', '#f97316', '#22c55e', '#ef4444', '#0ea5e9', '#a855f7']);
 
-  // 右卡：留资方式分布（手机号 / 微信号 / 引导动作 / 未留）
-  const way = new Map();
-  way.set('手机号留资', 0); way.set('微信号留资', 0); way.set('引导跟进', 0); way.set('未留资', 0);
+  // 右卡：客户阶段分布
+  const stageCounter = new Map();
   for (const r of allData) {
-    const kind = r.contact_kind.trim();
-    if (kind === 'P') way.set('手机号留资', way.get('手机号留资') + 1);
-    else if (kind === 'W') way.set('微信号留资', way.get('微信号留资') + 1);
-    else if (kind === 'G') way.set('引导跟进', way.get('引导跟进') + 1);
-    else way.set('未留资', way.get('未留资') + 1);
+    const name = r.stage || '未标注';
+    stageCounter.set(name, (stageCounter.get(name) || 0) + 1);
   }
-  renderDist('actionDist', way, ['#6366f1', '#22c55e', '#f97316', '#adb5bd']);
+  renderDist('stageDist', stageCounter, ['#6366f1', '#22c55e', '#f97316', '#ef4444', '#0ea5e9', '#adb5bd']);
 }
 
 // ── 复制 ────────────────────────────────
-function currentData() {
-  return filteredData.length > 0 ? filteredData : allData;
-}
-
 async function copyData() {
-  const data = currentData();
+  const data = filteredData.length > 0 ? filteredData : allData;
   if (!data.length) return showToast('没有数据可复制', 'error');
-  const headers = ['序号','日期','星期','抖音来源','微信来源','渠道','留资方式','留资类型','手机号/微信号(脱敏)','是否进私域','备注'];
-  const lines = [headers.join('\t')];
-  for (const row of data) lines.push(COLUMNS.map(c => row[c]).join('\t'));
+  const lines = [HEADERS.join('\t')];
+  for (const r of data) lines.push(COLUMNS.map(c => r[c]).join('\t'));
   try {
     await navigator.clipboard.writeText(lines.join('\n'));
     showToast('数据已复制到剪贴板', 'success');
@@ -791,12 +845,13 @@ function escapeHtml(str) {
   const snap = window.__SNAPSHOT__;
   if (!snap || !snap.csv) {
     document.getElementById('tableBody').innerHTML =
-      '<tr class="empty-row"><td colspan="9">数据快照未生成，请稍后再试</td></tr>';
+      '<tr class="empty-row"><td colspan="10">数据快照未生成，请稍后再试</td></tr>';
     return;
   }
   allData = buildRecords(snap.csv);
   filteredData = [...allData];
   document.getElementById('updateTime').textContent = '数据快照更新于 ' + snap.updated_at;
+  fillChannelOptions();
   renderKPI(computeSummary(allData));
   renderTable();
   renderChart();
