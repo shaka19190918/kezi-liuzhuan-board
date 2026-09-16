@@ -662,7 +662,10 @@ function detailHtml(r) {
     <div class="detail-seg">③ 销售段（销售填写）</div>
     ${item('意向等级', r.intent)}${item('关注产品/服务', r.product)}${item('最近跟进日期', r.last_follow)}
     ${item('跟进方式', r.follow_way)}${item('跟进状态', r.follow_status)}${item('下次跟进日期', r.next_follow)}
-    ${item('跟进内容摘要', r.follow_note)}${item('客户反馈', r.feedback)}
+    <div class="detail-item" style="grid-column:1/-1;">
+      <span class="k">跟进内容摘要 / 客户反馈</span>
+      <span class="v" style="color:var(--text-muted);">（内部记录，公网不展示，请在腾讯文档查看）</span>
+    </div>
     <div class="detail-seg">④ 其他</div>
     ${item('备注', r.remark)}
   </div></td></tr>`;
