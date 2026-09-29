@@ -269,11 +269,16 @@ tr.main-row.open .caret { transform: rotate(90deg); }
   padding: 20px;
 }
 .dist-card h2 { font-size: 15px; font-weight: 600; margin-bottom: 14px; }
-.dist-row { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; font-size: 13px; }
-.dist-name { width: 110px; flex-shrink: 0; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.dist-bar { flex: 1; height: 18px; background: var(--bg); border-radius: 4px; overflow: hidden; }
-.dist-bar-fill { height: 100%; border-radius: 4px; }
-.dist-val { width: 32px; text-align: right; font-weight: 600; flex-shrink: 0; }
+.dist-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 13px; }
+.dist-swatch {
+  width: 12px; height: 12px; border-radius: 4px; flex-shrink: 0;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08);
+}
+.dist-name { width: 110px; flex-shrink: 0; color: var(--text); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dist-bar { flex: 1; height: 20px; background: #f1f5f9; border-radius: 5px; overflow: hidden; }
+.dist-bar-fill { height: 100%; border-radius: 5px; min-width: 4px; }
+.dist-pct { width: 36px; text-align: right; font-size: 11px; color: var(--text-secondary); flex-shrink: 0; }
+.dist-val { width: 28px; text-align: right; font-weight: 700; flex-shrink: 0; }
 
 /* ── Toast ── */
 .toast {
@@ -441,7 +446,7 @@ footer {
   <!-- 表格 -->
   <div class="table-section">
     <div class="table-header">
-      <h2>客户明细 (<span id="tableCount">0</span> 条) <span style="font-size:11px;color:var(--text-muted);font-weight:400;">点击行展开跟进详情</span></h2>
+      <h2>客户明细 (<span id="tableCount">0</span> 条) <span id="tableHint" style="font-size:11px;color:var(--text-muted);font-weight:400;">点击行展开跟进详情</span></h2>
       <div class="table-actions">
         <button class="btn btn-outline btn-sm" onclick="copyData()">复制数据</button>
       </div>
@@ -496,10 +501,10 @@ const HEADERS = ['客户编号','线索日期','星期','抖音昵称','微信�
   '是否进私域','联系方式','联系类型','意向等级','首次添加时间','关注产品/服务','最近跟进日期','跟进方式',
   '跟进内容摘要','客户反馈','下次跟进日期','跟进状态','客户阶段','预警','客户具体信息','备注'];
 
-// 日期解析：优先 YYYY-MM-DD，兼容 M.D / M/D
+// 日期解析：优先 YYYY-MM-DD，兼容 2026/9/1、2026.9.1、M.D / M/D
 function parseDate(s) {
   if (!s) return null;
-  let m = s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
+  let m = s.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/);
   if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
   m = s.match(/^(\d{1,2})[.\/-](\d{1,2})$/);
   if (m) {
@@ -514,6 +519,12 @@ function parseDate(s) {
 function dateNum(s) {
   const dt = parseDate(s);
   return dt ? dt.getFullYear() * 10000 + (dt.getMonth() + 1) * 100 + dt.getDate() : 0;
+}
+
+// 客户明细默认只展示 2026 年 9 月及以后（线索日期）；KPI / 趋势仍用全量
+const TABLE_SINCE = 20260901;
+function tableBase() {
+  return allData.filter(r => dateNum(r.date) >= TABLE_SINCE);
 }
 
 // ── CSV 解析（支持引号包裹的逗号/换行）──
@@ -586,7 +597,7 @@ function renderKPI(s) {
 // ── 筛选 ────────────────────────────────
 function fillChannelOptions() {
   const sel = document.getElementById('filterChannel');
-  const set = new Set(allData.map(r => r.channel).filter(Boolean));
+  const set = new Set(tableBase().map(r => r.channel).filter(Boolean));
   [...set].sort().forEach(c => {
     const op = document.createElement('option');
     op.value = c; op.textContent = c;
@@ -601,7 +612,7 @@ function applyFilters() {
   const warn = document.getElementById('filterWarn').value;
   const keyword = document.getElementById('filterKeyword').value.toLowerCase().trim();
 
-  filteredData = allData.filter(r => {
+  filteredData = tableBase().filter(r => {
     if (channel && r.channel !== channel) return false;
     if (stage === '已交接未跟进' && !r.stage.includes('已交接未跟进')) return false;
     else if (stage && stage !== '已交接未跟进' && r.stage !== stage) return false;
@@ -623,7 +634,7 @@ function resetFilters() {
   document.getElementById('filterPrivate').value = '';
   document.getElementById('filterWarn').value = '';
   document.getElementById('filterKeyword').value = '';
-  filteredData = [...allData];
+  filteredData = tableBase();
   renderTable();
 }
 
@@ -717,6 +728,13 @@ function renderTable() {
   }
   tbody.innerHTML = html;
   document.getElementById('tableCount').textContent = data.length;
+  const hidden = allData.length - tableBase().length;
+  const hint = document.getElementById('tableHint');
+  if (hint) {
+    hint.textContent = hidden
+      ? `已隐藏 9 月前 ${hidden} 条 · 点击行展开跟进详情`
+      : '点击行展开跟进详情';
+  }
 }
 
 // ── 趋势图 ──────────────────────────────
@@ -783,7 +801,38 @@ function renderChart() {
 }
 
 // ── 分布条 ──────────────────────────────
-function renderDist(elId, counter, colors) {
+const CHANNEL_COLORS = {
+  '直播间': '#4f46e5',
+  '直播': '#4338ca',
+  '短视频': '#ea580c',
+  '短视频+直播间': '#0d9488',
+  '朋友圈': '#16a34a',
+  '苏老师朋友圈': '#15803d',
+  '视频号直播': '#dc2626',
+  '微信小店': '#0284c7',
+  '抖音直播': '#7c3aed',
+  '抖音': '#db2777',
+  '叶长江同学': '#ca8a04',
+  '陈艳姐姐': '#c026d3',
+  '未标注': '#94a3b8',
+};
+const CHANNEL_FALLBACK = ['#0891b2', '#b45309', '#be185d', '#365314', '#1e40af', '#9a3412'];
+const STAGE_COLORS = {
+  '跟进中': '#16a34a',
+  '线索': '#4f46e5',
+  '已成单': '#0d9488',
+  '未标注': '#94a3b8',
+};
+
+function colorForChannel(name, i) {
+  return CHANNEL_COLORS[name] || CHANNEL_FALLBACK[i % CHANNEL_FALLBACK.length];
+}
+function colorForStage(name) {
+  if ((name || '').includes('已交接未跟进')) return '#dc2626';
+  return STAGE_COLORS[name] || '#64748b';
+}
+
+function renderDist(elId, counter, colorFn) {
   const el = document.getElementById(elId);
   const entries = [...counter.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8);
   if (entries.length === 0) {
@@ -791,30 +840,35 @@ function renderDist(elId, counter, colors) {
     return;
   }
   const max = entries[0][1];
-  el.innerHTML = entries.map(([name, val], i) => `
+  const total = [...counter.values()].reduce((a, b) => a + b, 0) || 1;
+  el.innerHTML = entries.map(([name, val], i) => {
+    const color = colorFn(name, i);
+    const pct = Math.round(val / total * 100);
+    return `
     <div class="dist-row">
+      <span class="dist-swatch" style="background:${color}"></span>
       <span class="dist-name" title="${escapeHtml(name)}">${escapeHtml(name)}</span>
-      <span class="dist-bar"><span class="dist-bar-fill" style="width:${Math.max(val / max * 100, 4)}%;background:${colors[i % colors.length]}"></span></span>
-      <span class="dist-val">${val}</span>
-    </div>`).join('');
+      <span class="dist-bar"><span class="dist-bar-fill" style="width:${Math.max(val / max * 100, 6)}%;background:${color}"></span></span>
+      <span class="dist-pct">${pct}%</span>
+      <span class="dist-val" style="color:${color}">${val}</span>
+    </div>`;
+  }).join('');
 }
 
 function renderDistributions() {
-  // 左卡：来源渠道分布
   const channelCounter = new Map();
   for (const r of allData) {
     const name = r.channel || '未标注';
     channelCounter.set(name, (channelCounter.get(name) || 0) + 1);
   }
-  renderDist('sourceDist', channelCounter, ['#6366f1', '#f97316', '#22c55e', '#ef4444', '#0ea5e9', '#a855f7']);
+  renderDist('sourceDist', channelCounter, colorForChannel);
 
-  // 右卡：客户阶段分布
   const stageCounter = new Map();
   for (const r of allData) {
     const name = r.stage || '未标注';
     stageCounter.set(name, (stageCounter.get(name) || 0) + 1);
   }
-  renderDist('stageDist', stageCounter, ['#6366f1', '#22c55e', '#f97316', '#ef4444', '#0ea5e9', '#adb5bd']);
+  renderDist('stageDist', stageCounter, colorForStage);
 }
 
 // ── 复制 ────────────────────────────────
@@ -853,7 +907,7 @@ function escapeHtml(str) {
     return;
   }
   allData = buildRecords(snap.csv);
-  filteredData = [...allData];
+  filteredData = tableBase();
   document.getElementById('updateTime').textContent = '数据快照更新于 ' + snap.updated_at;
   fillChannelOptions();
   renderKPI(computeSummary(allData));
