@@ -483,17 +483,18 @@ let sortDesc = true;   // 默认最新在前
 let chartDays = 30;    // 默认近30天
 let openId = null;     // 当前展开的客户编号
 
-// 主表列序（refresh.py 输出 23 列，第 1 行是列头）：
+// 主表列序（refresh.py 输出 24 列，第 1 行是列头）：
 // 0 客户编号 | 1 线索日期 | 2 星期 | 3 抖音昵称 | 4 微信昵称 | 5 来源渠道
 // 6 留资方式 | 7 留资说明 | 8 是否进私域 | 9 联系方式 | 10 联系类型 | 11 意向等级
 // 12 首次添加时间 | 13 关注产品/服务 | 14 最近跟进日期 | 15 跟进方式 | 16 跟进内容摘要
-// 17 客户反馈 | 18 下次跟进日期 | 19 跟进状态 | 20 客户阶段 | 21 预警 | 22 备注
+// 17 客户反馈 | 18 下次跟进日期 | 19 跟进状态 | 20 客户阶段 | 21 预警
+// 22 客户具体信息（公网源头置空） | 23 备注
 const COLUMNS = ['id','date','weekday','nick_douyin','nick_wechat','channel','lead_way','lead_note',
   'in_private','contact','contact_type','intent','first_add','product','last_follow','follow_way',
-  'follow_note','feedback','next_follow','follow_status','stage','warn','remark'];
+  'follow_note','feedback','next_follow','follow_status','stage','warn','customer_info','remark'];
 const HEADERS = ['客户编号','线索日期','星期','抖音昵称','微信昵称','来源渠道','留资方式','留资说明',
   '是否进私域','联系方式','联系类型','意向等级','首次添加时间','关注产品/服务','最近跟进日期','跟进方式',
-  '跟进内容摘要','客户反馈','下次跟进日期','跟进状态','客户阶段','预警','备注'];
+  '跟进内容摘要','客户反馈','下次跟进日期','跟进状态','客户阶段','预警','客户具体信息','备注'];
 
 // 日期解析：优先 YYYY-MM-DD，兼容 M.D / M/D
 function parseDate(s) {
@@ -541,7 +542,7 @@ function parseCSV(text) {
 function buildRecords(csvText) {
   const out = [];
   for (const raw of parseCSV(csvText)) {
-    while (raw.length < 23) raw.push('');
+    while (raw.length < COLUMNS.length) raw.push('');
     if (raw[0].trim() === '客户编号') continue;   // 跳过列头行
     if (raw.every(c => c.trim() === '')) continue;
     const rec = {};
@@ -663,7 +664,7 @@ function detailHtml(r) {
     ${item('意向等级', r.intent)}${item('关注产品/服务', r.product)}${item('最近跟进日期', r.last_follow)}
     ${item('跟进方式', r.follow_way)}${item('跟进状态', r.follow_status)}${item('下次跟进日期', r.next_follow)}
     <div class="detail-item" style="grid-column:1/-1;">
-      <span class="k">跟进内容摘要 / 客户反馈</span>
+      <span class="k">跟进内容摘要 / 客户反馈 / 客户具体信息</span>
       <span class="v" style="color:var(--text-muted);">（内部记录，公网不展示，请在腾讯文档查看）</span>
     </div>
     <div class="detail-seg">④ 其他</div>
