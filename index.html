@@ -152,6 +152,52 @@ body {
 }
 .kpi-card:hover .kpi-more { opacity: 1; }
 
+/* ── 行动清单（今日待办）── */
+.action-bar {
+  background: linear-gradient(135deg, #fff7ed 0%, #fef2f2 100%);
+  border: 1px solid #fed7aa;
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.action-bar-title {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #9a3412;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.action-chips { display: flex; gap: 8px; flex-wrap: wrap; flex: 1; }
+.action-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 11px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: 1px solid transparent;
+  background: var(--card);
+  color: var(--text-secondary);
+}
+.action-chip:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+.action-chip .n { font-weight: 700; }
+.action-chip.c-red { border-color: #fecaca; color: #b91c1c; }
+.action-chip.c-red:hover { background: #fef2f2; }
+.action-chip.c-orange { border-color: #fed7aa; color: #c2410c; }
+.action-chip.c-orange:hover { background: #fff7ed; }
+.action-chip.c-blue { border-color: #c7d2fe; color: #4338ca; }
+.action-chip.c-blue:hover { background: #eef2ff; }
+.action-chip.c-gray { border-color: var(--border); color: var(--text-secondary); }
+
 /* ── 分析区 Tab ── */
 .tabs { display: flex; gap: 3px; background: var(--bg); border-radius: 7px; padding: 3px; }
 .tab {
@@ -238,10 +284,50 @@ body {
 .badge-no { background: #f1f3f5; color: var(--text-muted); }
 .badge-stage { background: var(--primary-light); color: #4338ca; }
 .badge-lead { background: #f1f3f5; color: var(--text-secondary); }
-.badge-warn { background: var(--red-light); color: #b91c1c; }
+.badge-warn { background: var(--red-light); color: #b91c1c; cursor: help; }
 .badge-intent-a { background: var(--red-light); color: #b91c1c; }
 .badge-intent-b { background: var(--orange-light); color: #c2410c; }
 .badge-intent-c { background: #f1f3f5; color: var(--text-secondary); }
+
+/* ── 跟进健康度（运营视角：一眼看出谁该跟）── */
+.badge-fh-never { background: var(--red-light); color: #b91c1c; }
+.badge-fh-stale { background: var(--orange-light); color: #c2410c; }
+.badge-fh-overdue { background: #fef3c7; color: #a16207; }
+.badge-fh-ok { background: var(--green-light); color: #15803d; }
+.badge-fh-idle { background: #f1f3f5; color: var(--text-muted); }
+
+/* ── 待补录（数据在线上有、主表还没填）── */
+.badge-pending {
+  background: #ede9fe; color: #6d28d9; cursor: help;
+  border: 1px dashed #c4b5fd;
+}
+tr.main-row.is-pending { background: #faf9ff; }
+
+/* ── 快捷视角（一键筛出该跟的客户）── */
+.quick-views { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.qv-btn {
+  font-size: 11.5px; padding: 3px 9px; border-radius: 7px; cursor: pointer;
+  border: 1px solid var(--border); background: var(--card); color: var(--text-secondary);
+  transition: all .13s; font-family: inherit;
+}
+.qv-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
+.qv-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 600; }
+.qv-btn .n { opacity: .75; margin-left: 2px; }
+.qv-btn.qv-red { border-color: #fecaca; color: #b91c1c; background: #fff5f5; }
+.qv-btn.qv-red:hover { background: var(--red-light); border-color: var(--red); }
+.qv-btn.qv-red.active { background: var(--red); border-color: var(--red); color: #fff; }
+.qv-btn.qv-purple { border-color: #ddd6fe; color: #6d28d9; background: #faf9ff; }
+.qv-btn.qv-purple:hover { background: #ede9fe; border-color: #8b5cf6; }
+.qv-btn.qv-purple.active { background: #7c3aed; border-color: #7c3aed; color: #fff; }
+
+/* ── 弹窗内「跳到明细」按钮 ── */
+.modal-goto {
+  display: inline-flex; align-items: center; gap: 4px; margin-top: 9px;
+  font-size: 12px; padding: 4px 11px; border-radius: 7px; cursor: pointer;
+  border: 1px solid var(--primary); background: var(--primary-soft); color: var(--primary);
+  font-family: inherit; font-weight: 600;
+}
+.modal-goto:hover { background: var(--primary); color: #fff; }
 .contact-masked {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 12px;
@@ -291,6 +377,19 @@ tr.month-row.open .month-caret { transform: rotate(90deg); }
   margin-top: 4px;
   letter-spacing: 0.8px;
 }
+/* 详情里的预警原因块：说明为什么被预警 + 建议动作 */
+.warn-reason {
+  grid-column: 1 / -1;
+  background: #fff7ed;
+  border-left: 3px solid #ea580c;
+  border-radius: 0 6px 6px 0;
+  padding: 9px 13px;
+  margin-top: 2px;
+  margin-bottom: 4px;
+}
+.warn-reason-title { font-size: 12px; font-weight: 700; color: #9a3412; margin-bottom: 4px; }
+.warn-reason-body { font-size: 12px; color: #7c2d12; line-height: 1.65; }
+.warn-reason-body b { color: #9a3412; }
 .caret { display: inline-block; transition: transform 0.15s; color: var(--text-muted); font-size: 10px; }
 tr.main-row.open .caret { transform: rotate(90deg); }
 
@@ -318,35 +417,78 @@ tr.main-row.open .caret { transform: rotate(90deg); }
   overflow: hidden;
 }
 .modal-head {
-  padding: 15px 20px;
+  padding: 15px 20px 13px;
   border-bottom: 1px solid var(--border-soft);
+}
+.modal-head-top {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
 }
 .modal-head h3 { font-size: 15.5px; font-weight: 600; }
-.modal-desc {
-  font-size: 12px;
-  color: var(--text-secondary);
-  margin-top: 5px;
-  line-height: 1.6;
-  background: var(--primary-soft);
-  border-left: 2.5px solid var(--primary);
-  padding: 7px 11px;
-  border-radius: 0 5px 5px 0;
-}
 .modal-close {
   background: none; border: none; font-size: 21px; cursor: pointer;
   color: var(--text-muted); line-height: 1; padding: 0 3px; flex-shrink: 0;
 }
 .modal-close:hover { color: var(--text); }
-.modal-body { padding: 14px 20px 20px; overflow-y: auto; }
+/* 口径说明块 */
+.modal-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 9px;
+  line-height: 1.7;
+  background: var(--primary-soft);
+  border-left: 2.5px solid var(--primary);
+  padding: 9px 12px;
+  border-radius: 0 6px 6px 0;
+}
+.modal-desc .t { font-weight: 700; color: var(--primary); }
+/* 弹窗内搜索 */
+.modal-search {
+  padding: 11px 20px;
+  border-bottom: 1px solid var(--border-soft);
+  background: #fcfcfd;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+.modal-search input {
+  flex: 1;
+  min-width: 180px;
+  padding: 6px 11px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+  outline: none;
+  font-family: inherit;
+}
+.modal-search input:focus { border-color: var(--primary); }
+.modal-search-count { font-size: 11.5px; color: var(--text-muted); white-space: nowrap; }
+.modal-body { padding: 12px 20px 20px; overflow-y: auto; }
 .modal-body h4 {
   font-size: 12.5px; font-weight: 700; color: var(--text-secondary);
   margin: 14px 0 7px; padding-bottom: 5px; border-bottom: 1px solid var(--border-soft);
+  display: flex; align-items: center; gap: 7px;
 }
 .modal-body h4:first-child { margin-top: 0; }
+.modal-body h4 .h4-n {
+  background: var(--primary-light); color: var(--primary);
+  padding: 0 7px; border-radius: 9px; font-size: 11px;
+}
+/* 分组原因说明：解释为什么这类客户被归到这一组 */
+.group-reason {
+  font-size: 11.5px;
+  color: #7c2d12;
+  background: #fff7ed;
+  border-left: 2.5px solid #ea580c;
+  padding: 7px 11px;
+  border-radius: 0 5px 5px 0;
+  margin-bottom: 7px;
+  line-height: 1.6;
+}
+.modal-empty { color: var(--text-muted); padding: 20px 0; text-align: center; font-size: 12.5px; }
 .modal-item {
   display: flex; align-items: center; gap: 9px;
   padding: 7px 9px; border-radius: 6px; font-size: 12.5px;
@@ -435,10 +577,10 @@ footer {
         <div class="kpi-label">跟进中客户</div>
       </div>
       <div class="kpi-value" id="kpiFollowing">0</div>
-      <div class="kpi-sub">已成单 <b id="kpiDone">0</b></div>
+      <div class="kpi-sub" id="kpiFollowingSub">其中超期未跟 <b>0</b></div>
     </div>
     <div class="kpi-card" data-metric="warn">
-      <span class="kpi-more">查看明细 →</span>
+      <span class="kpi-more">看明细 →</span>
       <div class="kpi-top">
         <div class="kpi-icon" style="background: var(--red-light); color: var(--red);">⚠️</div>
         <div class="kpi-label">预警客户</div>
@@ -446,6 +588,12 @@ footer {
       <div class="kpi-value" id="kpiWarn">0</div>
       <div class="kpi-sub" id="kpiWarnSub">无人跟进 <b>0</b></div>
     </div>
+  </div>
+
+  <!-- ── 今日待办（把预警提示变成可执行清单）── -->
+  <div class="action-bar" id="actionBar">
+    <span class="action-bar-title">🎯 今日待办</span>
+    <div class="action-chips" id="actionChips"></div>
   </div>
 
   <!-- ── 区块二：分析 ── -->
@@ -516,13 +664,16 @@ footer {
     </div>
 
     <div class="filter-bar">
+      <div class="filter-group" style="flex:1;min-width:190px;">
+        <input type="text" class="filter-input" id="filterKeyword" placeholder="🔍 搜昵称 / 编号 / 备注 / 渠道 / 联系方式..." oninput="applyFilters()" style="width:100%;">
+      </div>
+      <div class="filter-divider"></div>
       <div class="filter-group">
         <span class="filter-label">渠道</span>
         <select class="filter-select" id="filterChannel" onchange="applyFilters()">
           <option value="">全部</option>
         </select>
       </div>
-      <div class="filter-divider"></div>
       <div class="filter-group">
         <span class="filter-label">阶段</span>
         <select class="filter-select" id="filterStage" onchange="applyFilters()">
@@ -532,7 +683,6 @@ footer {
           <option value="已交接未跟进">已交接未跟进</option>
         </select>
       </div>
-      <div class="filter-divider"></div>
       <div class="filter-group">
         <span class="filter-label">私域</span>
         <select class="filter-select" id="filterPrivate" onchange="applyFilters()">
@@ -541,7 +691,15 @@ footer {
           <option value="no">未进私域</option>
         </select>
       </div>
-      <div class="filter-divider"></div>
+      <div class="filter-group">
+        <span class="filter-label">意向</span>
+        <select class="filter-select" id="filterIntent" onchange="applyFilters()">
+          <option value="">全部</option>
+          <option value="A">A 级</option>
+          <option value="B">B 级</option>
+          <option value="C">C 级</option>
+        </select>
+      </div>
       <div class="filter-group">
         <span class="filter-label">预警</span>
         <select class="filter-select" id="filterWarn" onchange="applyFilters()">
@@ -549,15 +707,14 @@ footer {
           <option value="yes">只看预警</option>
         </select>
       </div>
-      <div class="filter-divider"></div>
-      <div class="filter-group">
-        <span class="filter-label">搜索</span>
-        <input type="text" class="filter-input" id="filterKeyword" placeholder="昵称 / 编号 / 备注..." oninput="applyFilters()" style="width:170px;">
-      </div>
       <div class="filter-group" style="margin-left:auto;">
+        <span class="filter-label" id="filterActive"></span>
         <button class="btn btn-sm" onclick="resetFilters()">重置</button>
       </div>
     </div>
+
+    <!-- 快捷视角：运营最常用的几个「该跟谁」入口，一键筛出 -->
+    <div class="quick-views" id="quickViews" style="margin-bottom:9px;"></div>
 
     <div class="table-scroll">
       <table class="data-table">
@@ -572,11 +729,12 @@ footer {
             <th>私域</th>
             <th>意向</th>
             <th>客户阶段</th>
+            <th style="cursor:pointer;" onclick="setSortKey('health')" title="按跟进紧急度排序：从未跟进 &gt; 超期未跟 &gt; 计划过期 &gt; 正常">跟进健康度 <span id="sortIndicatorHealth"></span></th>
             <th>预警</th>
           </tr>
         </thead>
         <tbody id="tableBody">
-          <tr class="empty-row"><td colspan="10">加载中...</td></tr>
+          <tr class="empty-row"><td colspan="11">加载中...</td></tr>
         </tbody>
       </table>
     </div>
@@ -592,11 +750,15 @@ footer {
 <div class="modal-overlay" id="metricModal">
   <div class="modal">
     <div class="modal-head">
-      <div style="flex:1;">
+      <div class="modal-head-top">
         <h3 id="modalTitle">明细</h3>
-        <div class="modal-desc" id="modalDesc"></div>
+        <button class="modal-close" onclick="closeMetricModal()">&times;</button>
       </div>
-      <button class="modal-close" onclick="closeMetricModal()">&times;</button>
+      <div class="modal-desc" id="modalDesc"></div>
+    </div>
+    <div class="modal-search">
+      <input type="text" id="modalSearchInput" placeholder="🔍 输入昵称 / 编号 / 渠道 / 备注 筛选..." oninput="renderModalList()">
+      <span class="modal-search-count" id="modalSearchCount"></span>
     </div>
     <div class="modal-body" id="modalBody"></div>
   </div>
@@ -609,11 +771,16 @@ footer {
 // ── 状态 ────────────────────────────────
 let allData = [];
 let filteredData = [];
+let pendingIds = new Set();          // 待补录客户编号（来自线上历史，主表还没填）
 let sortDesc = true;
 let trendGrain = 'month';
 let trendSpan = 12;
 let groupMode = 'month';
 let openId = null;
+let modalMetricKey = null;
+let sortKey = 'date';                // 'date' | 'health'
+let quickView = '';                  // 快捷视角 key（'' = 不启用）
+let lastActionKey = null;            // 记录弹窗来源，便于「跳到明细」
 const collapsedMonths = new Set();   // 折叠的月份（默认全展开）
 
 // 主表列序（24 列，第 1 行是列头）：
@@ -629,14 +796,28 @@ const HEADERS = ['客户编号','线索日期','星期','抖音昵称','微信�
   '是否进私域','联系方式','联系类型','意向等级','首次添加时间','关注产品/服务','最近跟进日期','跟进方式',
   '跟进内容摘要','客户反馈','下次跟进日期','跟进状态','客户阶段','预警','客户具体信息','备注'];
 
-// 渠道归一化：金山表「客户来源」列有人填了推荐人姓名（如 叶长江同学 / 陈艳姐姐），
-// 合并时被当作渠道带入。这类非渠道值统一归到「转介绍」，避免渠道分布里出现人名。
+// 渠道归一化：把同义/自由填写值收敛到统一口径，避免渠道分布里出现
+// 「抖音直播 / 直播间 / 视频号直播」这类同一渠道的多种写法。
+// 来源：① 金山表「客户来源」列填了推荐人姓名（叶长江同学 / 陈艳姐姐）；
+//       ② 历史快照里的自由填写值（抖音直播 / 视频号直播 / 朋友圈）。
 const CHANNEL_ALIASES = {
+  // 推荐人姓名 → 转介绍
   '叶长江同学': '转介绍',
   '陈艳姐姐': '转介绍',
+  // 直播类
   '直播': '直播间',
+  '抖音直播': '直播间',
+  '视频号直播': '直播间',
+  '视频号': '直播间',
+  '直播引流': '直播间',
+  // 短视频类
   '抖音': '短视频',
+  '抖音短视频': '短视频',
+  '视频号短视频': '短视频',
+  // 私域类
   '苏老师朋友圈': '朋友圈',
+  '朋友圈引流': '朋友圈',
+  '私信': '私信',
 };
 function normChannel(v) {
   const s = (v || '').trim();
@@ -669,6 +850,15 @@ function ymKey(s) {
 function yKey(s) {
   const dt = parseDate(s);
   return dt ? String(dt.getFullYear()) : '';
+}
+function todayTs() {
+  const n = new Date();
+  return new Date(n.getFullYear(), n.getMonth(), n.getDate()).getTime();
+}
+function daysSince(s) {
+  const dt = parseDate(s);
+  if (!dt) return null;
+  return Math.floor((todayTs() - dt.getTime()) / 86400000);
 }
 
 // ── CSV 解析 ────────────────────────────
@@ -711,50 +901,179 @@ function buildRecords(csvText) {
 const isYes = v => (v || '').trim() === '是';
 const hasWarn = r => !!r.warn;
 
-// ── KPI 口径定义（点卡片看明细）──────────
+// ── 预警规则（可解释：判定条件 + 触发原因 + 建议动作）──────
+// 每条预警都必须能回答「为什么是它」和「我该做什么」，否则只是噪音。
+const WARN_RULES = {
+  '⚠进私域无人跟进': {
+    short: '进私域没人跟',
+    reason: '客户已进入私域（加到微信），但<b>没有任何跟进记录</b>，或「客户阶段」被标记为「已交接未跟进」。'
+          + '这类客户最容易流失——加上了却没人聊，热度几天就凉了。',
+    action: '建议：24 小时内主动微信触达一次，并在腾讯文档补填「最近跟进日期」和「客户阶段」。',
+  },
+  '⚠日期格式错': {
+    short: '下次跟进日期写错了',
+    reason: '「下次跟进日期」填的不是标准日期（例如填成「下个-初」「基础课前」这类文字），'
+          + '<b>系统无法排期</b>，导致这条客户永远不会出现在待跟进提醒里。',
+    action: '建议：把「下次跟进日期」改成具体日期（如 2026-10-20），系统就能自动提醒。',
+  },
+};
+
+// ── 运营口径：把「状态」翻译成「行动」────────
+const STALE_DAYS = 30;   // 超过这么多天没跟进 = 需关注
+
+function isStale(r) {                       // 已进私域 + 长期未跟进
+  if (!isYes(r.in_private)) return false;
+  const d = daysSince(r.last_follow);
+  return d !== null && d > STALE_DAYS;
+}
+function isNeverFollowed(r) {               // 已进私域 + 从未跟进
+  return isYes(r.in_private) && !r.last_follow;
+}
+function isOverdue(r) {                     // 约定的下次跟进日期已过
+  const d = daysSince(r.next_follow);
+  return d !== null && d > 0;
+}
+
+// ── 跟进健康度（运营视角核心）──────────────
+// 把「这条客户该不该跟、急不急」压缩成一个可排序的等级，让明细表
+// 能一眼看出谁最该动手，而不是让运营自己去比对日期。
+// 等级越高越紧急：0=无需跟 1=正常 2=计划过期 3=超期未跟 4=从未跟进
+function healthOf(r) {
+  if (!isYes(r.in_private)) {
+    return { level: 0, cls: 'badge-fh-idle', label: '未进私域',
+             tip: '还没加到微信，不属于销售跟进范围' };
+  }
+  if (!r.last_follow) {
+    return { level: 4, cls: 'badge-fh-never', label: '从未跟进',
+             tip: '已进私域但一次都没跟过，最优先处理' };
+  }
+  const d = daysSince(r.last_follow);
+  if (d !== null && d > STALE_DAYS) {
+    return { level: 3, cls: 'badge-fh-stale', label: d + ' 天没跟',
+             tip: `最近跟进是 ${r.last_follow}，距今 ${d} 天，热度在流失` };
+  }
+  if (isOverdue(r)) {
+    const od = daysSince(r.next_follow);
+    return { level: 2, cls: 'badge-fh-overdue', label: '计划过期 ' + od + ' 天',
+             tip: `约定的下次跟进日期 ${r.next_follow} 已过 ${od} 天，还没动作` };
+  }
+  if (r.next_follow) {
+    return { level: 1, cls: 'badge-fh-ok', label: '已排期',
+             tip: `下次跟进日期 ${r.next_follow}` };
+  }
+  return { level: 1, cls: 'badge-fh-ok', label: d !== null ? d + ' 天前' : '正常',
+           tip: r.last_follow ? `最近跟进 ${r.last_follow}` : '' };
+}
+
+// 快捷视角：运营每天开工最想看的几个「该跟谁」
+function quickViews() {
+  return [
+    { key: 'urgent',   cls: 'qv-red',  label: '🔥 最该跟',
+      hint: '从未跟进 + 超期未跟 + 计划过期，按紧急度排序',
+      filter: r => healthOf(r).level >= 2 },
+    { key: 'never',    cls: 'qv-red',  label: '从未跟进',
+      hint: '已进私域但一次都没跟过',
+      filter: r => healthOf(r).level === 4 },
+    { key: 'noNext',   cls: '',        label: '没排下次跟进',
+      hint: '已进私域但「下次跟进日期」是空的，容易漏掉',
+      filter: r => isYes(r.in_private) && !r.next_follow },
+    { key: 'noStage',  cls: '',        label: '阶段未填',
+      hint: '「客户阶段」为空，看不出推进到哪一步了',
+      filter: r => isYes(r.in_private) && !r.stage },
+    { key: 'recent',   cls: '',        label: '近 7 天新增',
+      hint: '最近 7 天留资的客户',
+      filter: r => { const d = daysSince(r.date); return d !== null && d <= 7; } },
+    { key: 'pending',  cls: 'qv-purple', label: '待补录',
+      hint: '还没补录进腾讯主表的客户，补录后标记消失',
+      filter: r => pendingIds.has(r.id) },
+  ];
+}
+
+// 今日待办：按「紧急度」排列的行动清单
+function actionItems() {
+  return [
+    { key: 'unfollowed', cls: 'c-red',    label: '进私域无人跟进',
+      hint: '加了微信却没人聊过，最容易流失',
+      items: () => allData.filter(r => r.warn.includes('无人跟进')) },
+    { key: 'overdue',    cls: 'c-orange', label: '计划已过期',
+      hint: '约定的下次跟进日期已经过了，但还没动作',
+      items: () => allData.filter(isOverdue) },
+    { key: 'stale',      cls: 'c-orange', label: `超 ${STALE_DAYS} 天没跟`,
+      hint: '长期没触达，客户热度在流失',
+      items: () => allData.filter(isStale) },
+    { key: 'never',      cls: 'c-blue',   label: '从未跟进',
+      hint: '已进私域，但一次跟进记录都没有',
+      items: () => allData.filter(isNeverFollowed) },
+    { key: 'warn',       cls: 'c-gray',   label: '全部预警',
+      hint: '主表「预警」列非空的全部客户',
+      items: () => allData.filter(hasWarn) },
+  ];
+}
+
+// ── KPI 口径定义（点卡片看明细 + 说明）──────
 const METRICS = {
   total: {
     title: '总客资数',
-    desc: '全部客资记录数，含各年份全部渠道。下方按年份与渠道展示分布。',
+    desc: '<span class="t">怎么算的：</span>腾讯主表里<b>所有非空记录</b>，不分渠道、不分年份、不分状态。'
+        + '这是累计盘子的总规模。',
     items: () => allData,
     extra: r => `${r.date || '—'} · ${r.channel || '未标注渠道'}`,
   },
   inPrivate: {
     title: '已进私域',
-    desc: '「是否进私域」列为「是」的客户。私域率 = 已进私域 ÷ 总客资数。',
+    desc: '<span class="t">怎么算的：</span>主表「<b>是否进私域</b>」列填「是」的客户。'
+        + '私域率 = 已进私域 ÷ 总客资数。<br>'
+        + '只有进了私域（加到微信）才谈得上后续转化，所以这个数字直接反映直播间的<b>加粉效率</b>。',
     items: () => allData.filter(r => isYes(r.in_private)),
-    extra: r => `${r.channel || '未标注渠道'} · ${r.intent ? r.intent + ' 级' : '未定级'}`,
+    extra: r => {
+      const d = daysSince(r.last_follow);
+      if (!r.last_follow) return `${r.channel || '未标注'} · ⚠ 从未跟进`;
+      if (d > STALE_DAYS) return `${r.channel || '未标注'} · ⚠ ${d} 天没跟`;
+      return `${r.channel || '未标注'} · 最近跟进 ${r.last_follow}`;
+    },
   },
   following: {
     title: '跟进中客户',
-    desc: '「客户阶段」为「跟进中」的客户（销售已接手、正在推进）。',
+    desc: '<span class="t">怎么算的：</span>主表「<b>客户阶段</b>」列填「跟进中」的客户，'
+        + '代表销售已接手、正在推进。<br>'
+        + '下面会额外标出其中<b>超期未跟进</b>的，避免「挂着跟进中但实际没人动」。',
     items: () => allData.filter(r => r.stage === '跟进中'),
-    extra: r => `${r.channel || '未标注渠道'} · 最近跟进 ${r.last_follow || '—'}`,
+    extra: r => {
+      const d = daysSince(r.last_follow);
+      if (!r.last_follow) return `${r.channel || '未标注'} · ⚠ 从未跟进`;
+      if (d > STALE_DAYS) return `${r.channel || '未标注'} · ⚠ ${d} 天没跟`;
+      return `${r.channel || '未标注'} · ${r.last_follow}`;
+    },
+    groupBy: r => (isStale(r) || isNeverFollowed(r)) ? '⚠ 超期 / 从未跟进（优先处理）' : '正常跟进中',
   },
   warn: {
     title: '预警客户',
-    desc: '「预警」列非空的客户。预警由系统按规则自动标注，目前有两类：'
-        + '「⚠进私域无人跟进」= 已进私域但没有销售跟进记录；'
-        + '「⚠日期格式错」= 下次跟进日期填写不规范（如写成「下个-初」），无法排期。',
+    desc: '<span class="t">什么是预警客户：</span>主表「<b>预警</b>」列被系统自动打了标记的客户。'
+        + '标记不是随便打的，目前有<b>两条明确规则</b>，每条都对应一个具体问题：<br>'
+        + '<b>① ⚠进私域无人跟进</b> —— 客户已进私域，但没有任何跟进记录，或阶段被标记为「已交接未跟进」。<br>'
+        + '<b>② ⚠日期格式错</b> —— 「下次跟进日期」填的不是标准日期（如「下个-初」），系统无法排期。<br>'
+        + '下方按规则分组列出，每组写明<b>为什么被预警</b>和<b>建议怎么处理</b>。',
     items: () => allData.filter(hasWarn),
     extra: r => r.warn,
     groupBy: r => r.warn,
+    groupReason: r => WARN_RULES[r.warn] || null,
   },
 };
 
 // ── KPI 渲染 ────────────────────────────
 function computeSummary(rows) {
-  const now = new Date();
-  const todayTs = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-  const weekStartTs = todayTs - 6 * 86400000;
+  const t0 = todayTs();
+  const weekStart = t0 - 6 * 86400000;
   const week = rows.filter(r => {
     const dt = parseDate(r.date);
-    return dt && dt.getTime() >= weekStartTs && dt.getTime() <= todayTs;
+    return dt && dt.getTime() >= weekStart && dt.getTime() <= t0;
   }).length;
+  const following = rows.filter(r => r.stage === '跟进中');
   return {
     total: rows.length,
     in_private: rows.filter(r => isYes(r.in_private)).length,
-    following: rows.filter(r => r.stage === '跟进中').length,
+    following: following.length,
+    following_stale: following.filter(r => isStale(r) || isNeverFollowed(r)).length,
     done: rows.filter(r => r.follow_status === '已成单').length,
     warn: rows.filter(hasWarn).length,
     warn_unfollowed: rows.filter(r => r.warn.includes('无人跟进')).length,
@@ -768,54 +1087,148 @@ function renderKPI(s) {
   document.getElementById('kpiPrivate').textContent = s.in_private;
   document.getElementById('kpiPrivateRate').textContent = s.total ? Math.round(s.in_private / s.total * 100) + '%' : '—';
   document.getElementById('kpiFollowing').textContent = s.following;
-  document.getElementById('kpiDone').textContent = s.done;
+  document.getElementById('kpiFollowingSub').innerHTML = `其中超期未跟 <b>${s.following_stale}</b>`;
   document.getElementById('kpiWarn').textContent = s.warn;
   document.getElementById('kpiWarnSub').innerHTML = `无人跟进 <b>${s.warn_unfollowed}</b>`;
+}
+
+// ── 今日待办渲染 ────────────────────────
+function renderActionBar() {
+  const el = document.getElementById('actionChips');
+  const items = actionItems().map(a => ({ ...a, n: a.items().length }));
+  // 「全部预警」是汇总项，不计入总数避免重复
+  const total = items.reduce((s, a) => s + (a.key === 'warn' ? 0 : a.n), 0);
+  if (!total) {
+    el.innerHTML = '<span style="font-size:12.5px;color:var(--green);font-weight:600;">✅ 暂无需要紧急处理的客户</span>';
+    return;
+  }
+  el.innerHTML = items.map(a =>
+    `<span class="action-chip ${a.cls}" onclick="openActionModal('${a.key}')" title="${escapeHtml(a.hint)}">
+       ${escapeHtml(a.label)} <span class="n">${a.n}</span>
+     </span>`).join('');
+}
+
+// 行动清单点进去：直接列出该动作对应的客户
+function openActionModal(key) {
+  const a = actionItems().find(x => x.key === key);
+  if (!a) return;
+  const list = a.items();
+  modalMetricKey = null;
+  lastActionKey = key;
+  document.getElementById('modalTitle').textContent = `${a.label}（${list.length} 条）`;
+  const ruleText = {
+    unfollowed: '主表「预警」列标记为「进私域无人跟进」——已加微信但没有任何跟进记录。',
+    overdue: '「下次跟进日期」已经过了今天，但还没更新跟进记录。',
+    stale: `「最近跟进日期」距今超过 ${STALE_DAYS} 天，客户热度在流失。`,
+    never: '已进私域，但「最近跟进日期」是空的，一次都没跟过。',
+    warn: '主表「预警」列非空的全部客户。',
+  }[key] || a.hint;
+  document.getElementById('modalDesc').innerHTML =
+    `<span class="t">判定规则：</span>${ruleText}<br>`
+    + '<b>建议：</b>点开腾讯文档找到对应客户，补填「最近跟进日期」，并按实际情况更新「客户阶段」。'
+    + `<button class="modal-goto" onclick="jumpToTable('${key}')">↓ 在客户明细中打开这批客户</button>`;
+  document.getElementById('modalSearchInput').value = '';
+  renderModalList(list.map(r => ({ r, extra: METRICS.total.extra(r) })));
+  document.getElementById('metricModal').classList.add('active');
+}
+
+// 从弹窗跳到明细表：关弹窗 + 套用对应快捷视角 + 按紧急度排序
+function jumpToTable(key) {
+  const map = { unfollowed: 'never', never: 'never', stale: 'urgent', overdue: 'urgent', warn: '' };
+  const qv = map[key] !== undefined ? map[key] : '';
+  closeMetricModal();
+  resetFilters();                 // 先清空所有筛选与快捷视角
+  quickView = qv;                 // 再套用目标视角
+  sortKey = 'health';             // 按紧急度排列
+  syncSortIndicators();
+  applyFilters();
+  const sc = document.querySelector('.table-scroll');
+  if (sc) sc.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  showToast('已按紧急度排列，最该跟的排在最上面', 'success');
 }
 
 // ── KPI 明细弹窗 ────────────────────────
 function openMetric(key) {
   const m = METRICS[key];
   if (!m) return;
+  modalMetricKey = key;
   const items = m.items();
   document.getElementById('modalTitle').textContent = `${m.title}（${items.length} 条）`;
-  document.getElementById('modalDesc').textContent = m.desc;
-
-  const body = document.getElementById('modalBody');
-  if (!items.length) {
-    body.innerHTML = '<div style="color:var(--text-muted);padding:16px 0;">暂无符合条件的客户</div>';
-  } else if (m.groupBy) {
-    const groups = new Map();
-    for (const r of items) {
-      const g = m.groupBy(r) || '其他';
-      if (!groups.has(g)) groups.set(g, []);
-      groups.get(g).push(r);
-    }
-    body.innerHTML = [...groups.entries()].map(([g, list]) => `
-      <h4>${escapeHtml(g)}（${list.length} 条）</h4>
-      ${list.map(r => modalItemHtml(r, m)).join('')}
-    `).join('');
-  } else {
-    body.innerHTML = items.map(r => modalItemHtml(r, m)).join('');
-  }
-
+  // KPI 弹窗也给一个「跳到明细」入口，把「看数字」接到「去动手」
+  const jumpKey = { inPrivate: 'never', following: 'stale', warn: 'warn' }[key];
+  document.getElementById('modalDesc').innerHTML = m.desc
+    + (jumpKey ? `<button class="modal-goto" onclick="jumpToTable('${jumpKey}')">↓ 在客户明细中打开这批客户</button>` : '');
+  document.getElementById('modalSearchInput').value = '';
+  renderModalList();
   document.getElementById('metricModal').classList.add('active');
   document.querySelectorAll('.kpi-card').forEach(c => {
     c.classList.toggle('active', c.dataset.metric === key);
   });
 }
 
-function modalItemHtml(r, m) {
+// 弹窗内搜索 + 渲染（几十上百条时靠它快速定位）
+function renderModalList(overrideList) {
+  const body = document.getElementById('modalBody');
+  const countEl = document.getElementById('modalSearchCount');
+  const kw = (document.getElementById('modalSearchInput').value || '').toLowerCase().trim();
+
+  let source;
+  if (overrideList) {
+    source = overrideList;
+  } else {
+    const m = METRICS[modalMetricKey];
+    if (!m) { body.innerHTML = '<div class="modal-empty">无数据</div>'; return; }
+    source = m.items().map(r => ({ r, extra: m.extra ? m.extra(r) : '' }));
+  }
+
+  if (kw) {
+    source = source.filter(({ r }) => {
+      const hay = [r.id, r.nick_douyin, r.nick_wechat, r.channel, r.stage, r.warn,
+                   r.intent, r.product, r.remark, r.contact, r.follow_way].join(' ').toLowerCase();
+      return hay.includes(kw);
+    });
+  }
+  countEl.textContent = kw ? `匹配 ${source.length} 条` : `共 ${source.length} 条`;
+
+  if (!source.length) {
+    body.innerHTML = '<div class="modal-empty">没有匹配的客户</div>';
+    return;
+  }
+
+  const m = modalMetricKey ? METRICS[modalMetricKey] : null;
+  if (m && m.groupBy) {
+    const groups = new Map();
+    for (const item of source) {
+      const g = m.groupBy(item.r) || '其他';
+      if (!groups.has(g)) groups.set(g, []);
+      groups.get(g).push(item);
+    }
+    body.innerHTML = [...groups.entries()].map(([g, list]) => {
+      const rule = m.groupReason ? m.groupReason({ warn: g }) : null;
+      const ruleBlock = rule
+        ? `<div class="group-reason"><b>为什么被预警：</b>${rule.reason}<br><b>${rule.action}</b></div>`
+        : '';
+      return `<h4>${escapeHtml(g)} <span class="h4-n">${list.length}</span></h4>${ruleBlock}`
+        + list.map(({ r, extra }) => modalItemHtml(r, extra)).join('');
+    }).join('');
+  } else {
+    body.innerHTML = source.map(({ r, extra }) => modalItemHtml(r, extra)).join('');
+  }
+}
+
+function modalItemHtml(r, extra) {
   const nick = r.nick_douyin || r.nick_wechat || '（未填昵称）';
   return `<div class="modal-item">
     <span class="mi-id">${escapeHtml(r.id)}</span>
     <span class="mi-nick">${escapeHtml(nick)}</span>
-    <span class="mi-extra">${escapeHtml(m.extra ? m.extra(r) : '')}</span>
+    <span class="mi-extra">${escapeHtml(extra || '')}</span>
   </div>`;
 }
 
 function closeMetricModal() {
   document.getElementById('metricModal').classList.remove('active');
+  modalMetricKey = null;
+  lastActionKey = null;
   document.querySelectorAll('.kpi-card').forEach(c => c.classList.remove('active'));
 }
 
@@ -842,37 +1255,93 @@ function applyFilters() {
   const channel = document.getElementById('filterChannel').value;
   const stage = document.getElementById('filterStage').value;
   const priv = document.getElementById('filterPrivate').value;
+  const intent = document.getElementById('filterIntent').value;
   const warn = document.getElementById('filterWarn').value;
   const keyword = document.getElementById('filterKeyword').value.toLowerCase().trim();
+  const qv = quickView ? quickViews().find(v => v.key === quickView) : null;
 
   filteredData = allData.filter(r => {
+    if (qv && !qv.filter(r)) return false;
     if (channel && r.channel !== channel) return false;
     if (stage === '已交接未跟进' && !r.stage.includes('已交接未跟进')) return false;
     else if (stage && stage !== '已交接未跟进' && r.stage !== stage) return false;
     if (priv === 'yes' && !isYes(r.in_private)) return false;
     if (priv === 'no' && isYes(r.in_private)) return false;
+    if (intent && r.intent !== intent) return false;
     if (warn === 'yes' && !hasWarn(r)) return false;
     if (keyword) {
-      const haystack = [r.id, r.nick_douyin, r.nick_wechat, r.channel, r.remark, r.product].join(' ').toLowerCase();
+      const haystack = [r.id, r.nick_douyin, r.nick_wechat, r.channel, r.remark,
+                        r.product, r.contact, r.stage, r.warn, r.follow_way].join(' ').toLowerCase();
       if (!haystack.includes(keyword)) return false;
     }
     return true;
   });
+  updateActiveFilterHint();
+  renderQuickViews();
   renderTable();
 }
 
+function updateActiveFilterHint() {
+  const n = allData.length - filteredData.length;
+  document.getElementById('filterActive').textContent = n > 0 ? `已筛掉 ${n} 条` : '';
+}
+
 function resetFilters() {
-  ['filterChannel','filterStage','filterPrivate','filterWarn','filterKeyword']
+  ['filterChannel','filterStage','filterPrivate','filterIntent','filterWarn','filterKeyword']
     .forEach(id => { document.getElementById(id).value = ''; });
+  quickView = '';
   filteredData = [...allData];
+  updateActiveFilterHint();
+  renderQuickViews();
   renderTable();
 }
 
 // ── 排序 / 分组 ─────────────────────────
 function toggleSort() {
-  sortDesc = !sortDesc;
-  document.getElementById('sortIndicator').textContent = sortDesc ? '▼' : '▲';
+  if (sortKey === 'date') {
+    sortDesc = !sortDesc;
+  } else {
+    sortKey = 'date';
+    sortDesc = true;
+  }
+  syncSortIndicators();
   renderTable();
+}
+
+// 按「跟进健康度」排序：最紧急的排最前，运营一进来就知道先跟谁
+function setSortKey(k) {
+  sortKey = (sortKey === k) ? 'date' : k;
+  syncSortIndicators();
+  renderTable();
+}
+
+function syncSortIndicators() {
+  const d = document.getElementById('sortIndicator');
+  const h = document.getElementById('sortIndicatorHealth');
+  if (sortKey === 'date') {
+    d.textContent = sortDesc ? '▼' : '▲';
+    h.textContent = '';
+  } else {
+    d.textContent = '';
+    h.textContent = '⬇ 紧急优先';
+  }
+}
+
+// ── 快捷视角 ────────────────────────────
+function renderQuickViews() {
+  const el = document.getElementById('quickViews');
+  el.innerHTML = '<span class="filter-label" style="margin-right:2px;">快捷视角</span>'
+    + quickViews().map(v => {
+        const n = allData.filter(v.filter).length;
+        return `<button class="qv-btn ${v.cls}${quickView === v.key ? ' active' : ''}"
+                  onclick="setQuickView('${v.key}')" title="${escapeHtml(v.hint)}">
+                  ${escapeHtml(v.label)}<span class="n">${n}</span></button>`;
+      }).join('');
+}
+
+function setQuickView(key) {
+  quickView = (quickView === key) ? '' : key;
+  applyFilters();
 }
 
 function setGroup(mode, btn) {
@@ -907,18 +1376,39 @@ function toggleDetail(id) {
   renderTable();
 }
 
+// 预警原因块：展开行时告诉使用者「为什么被预警 + 建议做什么」
+function warnReasonHtml(r) {
+  const rule = WARN_RULES[r.warn];
+  if (!rule) return '';
+  return `<div class="warn-reason">
+    <div class="warn-reason-title">⚠ 为什么被预警：${escapeHtml(r.warn)}</div>
+    <div class="warn-reason-body">${rule.reason}<br><b>${rule.action}</b></div>
+  </div>`;
+}
+
 function detailHtml(r) {
   const item = (k, v) => `<div class="detail-item"><span class="k">${k}</span><span class="v">${v ? escapeHtml(v) : '—'}</span></div>`;
-  return `<tr class="detail-row"><td colspan="10"><div class="detail-grid">
+  const d = daysSince(r.last_follow);
+  const followHint = !r.last_follow
+    ? '<span style="color:#b91c1c;font-weight:600;">从未跟进</span>'
+    : (d > STALE_DAYS ? `<span style="color:#c2410c;font-weight:600;">${d} 天未跟进</span>` : `${d} 天前`);
+  return `<tr class="detail-row"><td colspan="11"><div class="detail-grid">
+    ${r.warn ? warnReasonHtml(r) : ''}
+    ${pendingIds.has(r.id) ? `<div class="warn-reason" style="background:#faf5ff;border-color:#e9d5ff;">
+      <div class="warn-reason-title" style="color:#6d28d9;">📌 这条客户还没补录进腾讯主表</div>
+      <div class="warn-reason-body">当前展示的是历史数据（此前由金山表带过来）。
+        <b>请尽快把这批客户补录进腾讯文档「客户主表」</b>，补录后标记会自动消失，日常跟进也会走主表统一流程。</div>
+    </div>` : ''}
     <div class="detail-seg">① 流量段（直播组填写）</div>
     ${item('留资方式', r.lead_way)}${item('留资说明', r.lead_note)}${item('来源渠道', r.channel)}
     <div class="detail-seg">② 交接段</div>
     ${item('联系方式', r.contact)}${item('联系类型', r.contact_type)}${item('首次添加时间', r.first_add)}
     <div class="detail-seg">③ 销售段（销售填写）</div>
-    ${item('意向等级', r.intent)}${item('关注产品/服务', r.product)}${item('最近跟进日期', r.last_follow)}
+    ${item('意向等级', r.intent)}${item('关注产品/服务', r.product)}
+    <div class="detail-item"><span class="k">最近跟进</span><span class="v">${r.last_follow ? escapeHtml(r.last_follow) + ' ' : ''}（${followHint}）</span></div>
     ${item('跟进方式', r.follow_way)}${item('跟进状态', r.follow_status)}${item('下次跟进日期', r.next_follow)}
     <div class="detail-item" style="grid-column:1/-1;">
-      <span class="k">跟进内容 / 客户反馈 / 客户具体信息</span>
+      <span class="k">跟进内容 / 客户反馈</span>
       <span class="v" style="color:var(--text-muted);">（内部记录，公网不展示，请在腾讯文档查看）</span>
     </div>
     <div class="detail-seg">④ 其他</div>
@@ -940,31 +1430,48 @@ function mainRowHtml(r) {
     : '<span style="color:var(--text-muted)">—</span>';
 
   const warnCell = r.warn
-    ? `<span class="badge badge-warn">${escapeHtml(r.warn)}</span>`
+    ? `<span class="badge badge-warn" title="${escapeHtml((WARN_RULES[r.warn] || {}).short || r.warn)}">${escapeHtml(r.warn)}</span>`
     : '<span style="color:var(--text-muted)">—</span>';
 
+  const h = healthOf(r);
+  const healthCell = `<span class="badge ${h.cls}" title="${escapeHtml(h.tip)}">${escapeHtml(h.label)}</span>`;
+
+  // 待补录：这条客户线上有、但主表还没填 → 提醒人工补录进腾讯主表
+  const isPending = pendingIds.has(r.id);
+  const pendingTag = isPending
+    ? '<span class="badge badge-pending" title="该客户尚未补录进腾讯主表，当前展示的是历史数据；请尽快补录，补录后此标记自动消失">待补录</span>'
+    : '';
+
   const open = openId === r.id;
-  return `<tr class="main-row${open ? ' open' : ''}" onclick="toggleDetail('${escapeHtml(r.id)}')">
+  return `<tr class="main-row${open ? ' open' : ''}${isPending ? ' is-pending' : ''}" onclick="toggleDetail('${escapeHtml(r.id)}')">
       <td><span class="caret">▶</span></td>
       <td style="font-family:ui-monospace,monospace;font-size:11.5px;">${escapeHtml(r.id)}</td>
       <td style="white-space:nowrap;">${escapeHtml(r.date)}${r.weekday ? ' ' + escapeHtml(r.weekday) : ''}</td>
-      <td>${nicks || '<span style="color:var(--text-muted)">—</span>'}</td>
+      <td>${nicks || '<span style="color:var(--text-muted)">—</span>'}${pendingTag}</td>
       <td>${escapeHtml(r.channel) || '<span style="color:var(--text-muted)">—</span>'}</td>
       <td>${contactCell}</td>
       <td>${privateBadge}</td>
       <td>${intentBadge(r.intent)}</td>
       <td>${stageBadge(r.stage)}</td>
+      <td>${healthCell}</td>
       <td>${warnCell}</td>
     </tr>${open ? detailHtml(r) : ''}`;
 }
 
 function renderTable() {
   const tbody = document.getElementById('tableBody');
-  const data = [...filteredData].sort((a, b) =>
-    sortDesc ? dateNum(b.date) - dateNum(a.date) : dateNum(a.date) - dateNum(b.date));
+  const data = [...filteredData].sort((a, b) => {
+    if (sortKey === 'health') {
+      const ha = healthOf(a).level, hb = healthOf(b).level;
+      // 健康度降序：最紧急的在最上面；同级再按日期新的优先
+      if (hb !== ha) return hb - ha;
+      return dateNum(b.date) - dateNum(a.date);
+    }
+    return sortDesc ? dateNum(b.date) - dateNum(a.date) : dateNum(a.date) - dateNum(b.date);
+  });
 
   if (data.length === 0) {
-    tbody.innerHTML = '<tr class="empty-row"><td colspan="10">暂无符合条件的客户数据</td></tr>';
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="11">暂无符合条件的客户数据</td></tr>';
     document.getElementById('tableCount').textContent = '0';
     return;
   }
@@ -987,10 +1494,13 @@ function renderTable() {
       const label = groupMode === 'year'
         ? `${key} 年`
         : `${key.slice(0, 4)} 年 ${parseInt(key.slice(5), 10)} 月`;
+      // 组内预警数提示，方便运营快速定位问题月份
+      const w = list.filter(hasWarn).length;
+      const wTag = w ? ` <span style="color:#b91c1c;">· ⚠ ${w}</span>` : '';
       html += `<tr class="month-row${collapsed ? '' : ' open'}" onclick="toggleMonth('${key}')">
-          <td colspan="10">
+          <td colspan="11">
             <span class="month-caret">▶</span>${escapeHtml(label)}
-            <span class="month-count">· ${list.length} 条</span>
+            <span class="month-count">· ${list.length} 条</span>${wTag}
           </td>
         </tr>`;
       if (!collapsed) html += list.map(mainRowHtml).join('');
@@ -1230,10 +1740,14 @@ document.addEventListener('keydown', e => {
     return;
   }
   allData = buildRecords(snap.csv);
+  pendingIds = new Set(snap.pending_backfill || []);
   filteredData = [...allData];
-  document.getElementById('updateTime').textContent = '数据快照更新于 ' + snap.updated_at;
+  document.getElementById('updateTime').textContent = '数据快照更新于 ' + snap.updated_at
+    + (pendingIds.size ? ` · ${pendingIds.size} 条待补录进主表` : '');
   fillChannelOptions();
   renderKPI(computeSummary(allData));
+  renderActionBar();
+  renderQuickViews();
   renderTable();
   renderChart();
   renderDistributions();
