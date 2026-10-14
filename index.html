@@ -7,37 +7,42 @@
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --bg: #f8f9fa;
+  --bg: #f6f7f9;
   --card: #ffffff;
-  --border: #e9ecef;
+  --border: #e8eaed;
+  --border-soft: #f1f3f5;
   --text: #1a1a2e;
-  --text-secondary: #6c757d;
-  --text-muted: #adb5bd;
-  --primary: #6366f1;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+  --primary: #4f46e5;
   --primary-light: #eef2ff;
-  --green: #22c55e;
+  --primary-soft: #f5f6ff;
+  --green: #16a34a;
   --green-light: #dcfce7;
-  --orange: #f97316;
+  --orange: #ea580c;
   --orange-light: #ffedd5;
-  --red: #ef4444;
+  --red: #dc2626;
   --red-light: #fee2e2;
-  --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-  --shadow-lg: 0 4px 12px rgba(0,0,0,0.08);
+  --teal: #0d9488;
+  --teal-light: #ccfbf1;
+  --shadow: 0 1px 2px rgba(16,24,40,0.05);
+  --shadow-lg: 0 8px 24px rgba(16,24,40,0.12);
   --radius: 10px;
 }
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif;
   background: var(--bg);
   color: var(--text);
-  line-height: 1.6;
-  font-size: 14px;
+  line-height: 1.55;
+  font-size: 13.5px;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* ── 顶部导航 ── */
 .navbar {
   background: var(--card);
   border-bottom: 1px solid var(--border);
-  padding: 14px 28px;
+  padding: 11px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -45,136 +50,169 @@ body {
   top: 0;
   z-index: 100;
 }
-.navbar-left { display: flex; align-items: center; gap: 14px; }
+.navbar-left { display: flex; align-items: center; gap: 11px; }
 .navbar-logo {
-  width: 32px; height: 32px;
+  width: 28px; height: 28px;
   background: var(--primary);
-  border-radius: 8px;
+  border-radius: 7px;
   display: flex; align-items: center; justify-content: center;
-  color: white; font-weight: 700; font-size: 16px;
+  color: white; font-weight: 700; font-size: 14px;
 }
-.navbar h1 { font-size: 17px; font-weight: 600; }
-.navbar-right { display: flex; align-items: center; gap: 12px; }
+.navbar h1 { font-size: 15.5px; font-weight: 600; }
 .readonly-badge {
-  padding: 3px 10px;
+  padding: 2px 9px;
   border-radius: 20px;
   background: var(--orange-light);
   color: #c2410c;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 600;
 }
-.update-time { font-size: 12px; color: var(--text-secondary); }
+.navbar-right { display: flex; align-items: center; gap: 12px; }
+.update-time { font-size: 11.5px; color: var(--text-muted); }
+
 .btn {
-  padding: 7px 16px;
+  padding: 5px 12px;
   border: none;
-  border-radius: 7px;
-  font-size: 13px;
+  border-radius: 6px;
+  font-size: 12.5px;
   font-weight: 500;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   transition: all 0.15s;
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
 }
-.btn-outline { background: transparent; color: var(--text-secondary); border: 1px solid var(--border); }
-.btn-outline:hover { background: var(--bg); }
-.btn-sm { padding: 4px 10px; font-size: 12px; }
+.btn:hover { background: var(--bg); }
+.btn-sm { padding: 3px 9px; font-size: 12px; }
 
-/* ── 提示条 ── */
-.notice {
-  background: var(--primary-light);
-  border-bottom: 1px solid #dfe4ff;
-  padding: 9px 28px;
-  font-size: 12.5px;
-  color: #4338ca;
+.container { padding: 18px 24px 8px; max-width: 1360px; margin: 0 auto; }
+
+/* ── 区块通用 ── */
+.section {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+.section-head {
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--border-soft);
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
+  gap: 12px;
 }
-
-.container { padding: 24px 28px; max-width: 1400px; margin: 0 auto; }
+.section-head h2 { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 7px; }
+.section-head h2 .hint { font-size: 11.5px; color: var(--text-muted); font-weight: 400; }
 
 /* ── KPI ── */
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: 12px;
+  margin-bottom: 14px;
 }
 .kpi-card {
   background: var(--card);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 20px;
+  padding: 14px 16px;
   box-shadow: var(--shadow);
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  transition: transform 0.15s;
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
 }
-.kpi-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.kpi-card:hover { border-color: var(--primary); box-shadow: var(--shadow-lg); transform: translateY(-1px); }
+.kpi-card.active { border-color: var(--primary); background: var(--primary-soft); }
+.kpi-top { display: flex; align-items: center; gap: 9px; margin-bottom: 7px; }
 .kpi-icon {
-  width: 44px; height: 44px;
-  border-radius: 10px;
+  width: 30px; height: 30px;
+  border-radius: 8px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 20px;
+  font-size: 15px;
   flex-shrink: 0;
 }
-.kpi-info { flex: 1; }
-.kpi-value { font-size: 28px; font-weight: 700; line-height: 1.1; }
-.kpi-label { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
-.kpi-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.kpi-label { font-size: 12.5px; color: var(--text-secondary); font-weight: 500; }
+.kpi-value { font-size: 25px; font-weight: 700; line-height: 1.1; letter-spacing: -0.5px; }
+.kpi-sub { font-size: 11.5px; color: var(--text-muted); margin-top: 3px; }
 .kpi-sub b { color: var(--text-secondary); font-weight: 600; }
+.kpi-more {
+  position: absolute;
+  top: 12px; right: 14px;
+  font-size: 10.5px;
+  color: var(--primary);
+  opacity: 0;
+  transition: opacity 0.15s;
+  font-weight: 600;
+}
+.kpi-card:hover .kpi-more { opacity: 1; }
+
+/* ── 分析区 Tab ── */
+.tabs { display: flex; gap: 3px; background: var(--bg); border-radius: 7px; padding: 3px; }
+.tab {
+  border: none; background: transparent; padding: 4px 13px; font-size: 12.5px;
+  border-radius: 5px; cursor: pointer; color: var(--text-secondary); font-weight: 500;
+  transition: all 0.15s; font-family: inherit;
+}
+.tab.active { background: var(--card); color: var(--primary); font-weight: 600; box-shadow: var(--shadow); }
+.tab-panel { display: none; padding: 16px; }
+.tab-panel.active { display: block; }
+
+.chart-container { width: 100%; overflow-x: auto; }
+.chart-svg { width: 100%; min-width: 480px; }
+
+/* ── 分布条 ── */
+.dist-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 32px; }
+.dist-col-title {
+  font-size: 11px; font-weight: 700; color: var(--text-muted);
+  letter-spacing: 0.8px; margin-bottom: 9px; text-transform: uppercase;
+}
+.dist-row { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; font-size: 12.5px; }
+.dist-swatch { width: 9px; height: 9px; border-radius: 3px; flex-shrink: 0; }
+.dist-name { width: 104px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dist-bar { flex: 1; height: 15px; background: #f1f5f9; border-radius: 4px; overflow: hidden; }
+.dist-bar-fill { height: 100%; border-radius: 4px; min-width: 3px; }
+.dist-pct { width: 32px; text-align: right; font-size: 11px; color: var(--text-muted); flex-shrink: 0; }
+.dist-val { width: 24px; text-align: right; font-weight: 700; flex-shrink: 0; }
 
 /* ── 筛选 ── */
 .filter-bar {
-  background: var(--card);
-  border-radius: var(--radius);
-  padding: 16px 20px;
-  box-shadow: var(--shadow);
-  margin-bottom: 20px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border-soft);
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 9px;
   flex-wrap: wrap;
+  background: #fcfcfd;
 }
-.filter-group { display: flex; align-items: center; gap: 6px; }
-.filter-label { font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
+.filter-group { display: flex; align-items: center; gap: 5px; }
+.filter-label { font-size: 11.5px; color: var(--text-muted); white-space: nowrap; }
 .filter-select, .filter-input {
-  padding: 6px 10px;
+  padding: 4px 8px;
   border: 1px solid var(--border);
-  border-radius: 6px;
-  font-size: 13px;
-  background: var(--bg);
+  border-radius: 5px;
+  font-size: 12.5px;
+  background: var(--card);
   color: var(--text);
   outline: none;
   transition: border 0.15s;
+  font-family: inherit;
 }
 .filter-select:focus, .filter-input:focus { border-color: var(--primary); }
-.filter-divider { width: 1px; height: 22px; background: var(--border); }
+.filter-divider { width: 1px; height: 18px; background: var(--border); }
 
 /* ── 表格 ── */
-.table-section {
-  background: var(--card);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  overflow: hidden;
-  margin-bottom: 24px;
-}
-.table-header {
-  padding: 14px 20px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.table-header h2 { font-size: 15px; font-weight: 600; }
-.table-actions { display: flex; gap: 8px; }
-.table-scroll { max-height: 620px; overflow-y: auto; }
+.table-scroll { max-height: 600px; overflow-y: auto; }
 .data-table { width: 100%; border-collapse: collapse; }
 .data-table th {
   text-align: left;
-  padding: 10px 14px;
-  font-size: 12px;
+  padding: 8px 13px;
+  font-size: 11.5px;
   font-weight: 600;
   color: var(--text-secondary);
   background: #fafbfc;
@@ -185,18 +223,17 @@ body {
   white-space: nowrap;
 }
 .data-table td {
-  padding: 10px 14px;
-  border-bottom: 1px solid #f1f3f5;
-  font-size: 13px;
+  padding: 8px 13px;
+  border-bottom: 1px solid var(--border-soft);
+  font-size: 12.5px;
   vertical-align: top;
 }
 .data-table tbody tr.main-row { cursor: pointer; }
-.data-table tbody tr.main-row:nth-child(even) { background: #fcfcfd; }
-.data-table tbody tr.main-row:hover { background: var(--primary-light); }
-.tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; }
+.data-table tbody tr.main-row:hover { background: var(--primary-soft); }
+.tag { display: inline-block; padding: 1px 7px; border-radius: 4px; font-size: 11px; font-weight: 500; }
 .tag-douyin { background: var(--orange-light); color: #c2410c; }
 .tag-wechat { background: var(--green-light); color: #15803d; }
-.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+.badge { display: inline-block; padding: 1px 7px; border-radius: 9px; font-size: 11px; font-weight: 600; white-space: nowrap; }
 .badge-yes { background: var(--green-light); color: #15803d; }
 .badge-no { background: #f1f3f5; color: var(--text-muted); }
 .badge-stage { background: var(--primary-light); color: #4338ca; }
@@ -207,90 +244,130 @@ body {
 .badge-intent-c { background: #f1f3f5; color: var(--text-secondary); }
 .contact-masked {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 12.5px;
-  letter-spacing: 0.2px;
+  font-size: 12px;
   color: #334155;
   background: #f1f5f9;
   border: 1px solid #e2e8f0;
   border-radius: 4px;
-  padding: 2px 7px;
+  padding: 1px 6px;
   display: inline-block;
   cursor: default;
   white-space: nowrap;
 }
-.empty-row td { text-align: center; padding: 40px; color: var(--text-muted); }
+.empty-row td { text-align: center; padding: 34px; color: var(--text-muted); }
+
+/* ── 月份分组行 ── */
+tr.month-row td {
+  background: #f8fafc;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  padding: 6px 13px;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-soft);
+  cursor: pointer;
+  user-select: none;
+}
+tr.month-row:hover td { background: #f1f5f9; }
+.month-caret { display: inline-block; transition: transform 0.15s; font-size: 9px; margin-right: 6px; color: var(--text-muted); }
+tr.month-row.open .month-caret { transform: rotate(90deg); }
+.month-count { color: var(--text-muted); font-weight: 500; font-size: 11.5px; }
 
 /* ── 展开详情 ── */
-.detail-row td { background: #fafbff; padding: 14px 20px; }
+.detail-row td { background: #fafbff; padding: 12px 16px; }
 .detail-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 8px 24px;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 6px 22px;
 }
-.detail-item { font-size: 12.5px; display: flex; gap: 8px; }
+.detail-item { font-size: 12px; display: flex; gap: 7px; }
 .detail-item .k { color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
 .detail-item .v { color: var(--text); word-break: break-all; }
 .detail-seg {
   grid-column: 1 / -1;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 700;
   color: var(--primary);
-  margin-top: 6px;
-  letter-spacing: 1px;
+  margin-top: 4px;
+  letter-spacing: 0.8px;
 }
-.caret { display: inline-block; transition: transform 0.15s; color: var(--text-muted); font-size: 11px; }
+.caret { display: inline-block; transition: transform 0.15s; color: var(--text-muted); font-size: 10px; }
 tr.main-row.open .caret { transform: rotate(90deg); }
 
-/* ── 趋势图 ── */
-.chart-section {
+/* ── 弹窗 ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,0.45);
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.modal-overlay.active { display: flex; }
+.modal {
   background: var(--card);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 20px;
-  margin-bottom: 24px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 720px;
+  max-height: 82vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 16px 48px rgba(16,24,40,0.22);
+  overflow: hidden;
 }
-.chart-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-.chart-section h2 { font-size: 15px; font-weight: 600; }
-.range-tabs { display: flex; gap: 4px; background: var(--bg); border-radius: 8px; padding: 3px; }
-.range-tab {
-  border: none; background: transparent; padding: 5px 14px; font-size: 12px;
-  border-radius: 6px; cursor: pointer; color: var(--text-secondary); font-weight: 500; transition: all 0.15s;
+.modal-head {
+  padding: 15px 20px;
+  border-bottom: 1px solid var(--border-soft);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
 }
-.range-tab.active { background: var(--card); color: var(--primary); font-weight: 600; box-shadow: var(--shadow); }
-.chart-container { width: 100%; overflow-x: auto; }
-.chart-svg { width: 100%; min-width: 500px; }
-
-/* ── 分布 ── */
-.dist-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
-.dist-card {
-  background: var(--card);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 20px;
+.modal-head h3 { font-size: 15.5px; font-weight: 600; }
+.modal-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 5px;
+  line-height: 1.6;
+  background: var(--primary-soft);
+  border-left: 2.5px solid var(--primary);
+  padding: 7px 11px;
+  border-radius: 0 5px 5px 0;
 }
-.dist-card h2 { font-size: 15px; font-weight: 600; margin-bottom: 14px; }
-.dist-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 13px; }
-.dist-swatch {
-  width: 12px; height: 12px; border-radius: 4px; flex-shrink: 0;
-  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08);
+.modal-close {
+  background: none; border: none; font-size: 21px; cursor: pointer;
+  color: var(--text-muted); line-height: 1; padding: 0 3px; flex-shrink: 0;
 }
-.dist-name { width: 110px; flex-shrink: 0; color: var(--text); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.dist-bar { flex: 1; height: 20px; background: #f1f5f9; border-radius: 5px; overflow: hidden; }
-.dist-bar-fill { height: 100%; border-radius: 5px; min-width: 4px; }
-.dist-pct { width: 36px; text-align: right; font-size: 11px; color: var(--text-secondary); flex-shrink: 0; }
-.dist-val { width: 28px; text-align: right; font-weight: 700; flex-shrink: 0; }
+.modal-close:hover { color: var(--text); }
+.modal-body { padding: 14px 20px 20px; overflow-y: auto; }
+.modal-body h4 {
+  font-size: 12.5px; font-weight: 700; color: var(--text-secondary);
+  margin: 14px 0 7px; padding-bottom: 5px; border-bottom: 1px solid var(--border-soft);
+}
+.modal-body h4:first-child { margin-top: 0; }
+.modal-item {
+  display: flex; align-items: center; gap: 9px;
+  padding: 7px 9px; border-radius: 6px; font-size: 12.5px;
+  transition: background 0.15s;
+}
+.modal-item:hover { background: var(--primary-soft); }
+.modal-item .mi-id { font-family: ui-monospace, monospace; font-size: 11px; color: var(--text-muted); flex-shrink: 0; }
+.modal-item .mi-nick { font-weight: 600; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.modal-item .mi-extra { font-size: 11.5px; color: var(--text-muted); flex-shrink: 0; }
 
 /* ── Toast ── */
 .toast {
   position: fixed;
-  top: 20px; right: 20px;
+  top: 16px; right: 16px;
   background: var(--card);
   border-radius: 8px;
-  padding: 12px 20px;
+  padding: 10px 17px;
   box-shadow: var(--shadow-lg);
   z-index: 2000;
-  font-size: 13px;
-  transform: translateX(400px);
+  font-size: 12.5px;
+  transform: translateX(420px);
   transition: transform 0.3s;
 }
 .toast.show { transform: translateX(0); }
@@ -299,16 +376,19 @@ tr.main-row.open .caret { transform: rotate(90deg); }
 
 footer {
   text-align: center;
-  padding: 18px 28px 30px;
-  font-size: 12px;
+  padding: 14px 24px 24px;
+  font-size: 11.5px;
   color: var(--text-muted);
+  line-height: 1.7;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .kpi-grid { grid-template-columns: repeat(2, 1fr); }
   .dist-grid { grid-template-columns: 1fr; }
-  .navbar h1 { font-size: 14px; }
-  .container { padding: 16px; }
+}
+@media (max-width: 768px) {
+  .navbar h1 { font-size: 13.5px; }
+  .container { padding: 12px; }
   .filter-bar { flex-direction: column; align-items: stretch; }
   .filter-group { width: 100%; }
 }
@@ -327,137 +407,165 @@ footer {
   </div>
 </nav>
 
-<div class="notice">
-  <span>ℹ️</span>
-  <span>本页为<b>只读数据快照</b>，每日自动从腾讯文档「客户主表」同步一次。如需新增或修改，请在腾讯文档原表格中操作。</span>
-</div>
-
 <div class="container">
-  <!-- KPI -->
-  <div class="kpi-grid">
-    <div class="kpi-card">
-      <div class="kpi-icon" style="background: var(--primary-light); color: var(--primary);">📊</div>
-      <div class="kpi-info">
-        <div class="kpi-value" id="kpiTotal">0</div>
+  <!-- ── 区块一：KPI ── -->
+  <div class="kpi-grid" id="kpiGrid">
+    <div class="kpi-card" data-metric="total">
+      <span class="kpi-more">查看明细 →</span>
+      <div class="kpi-top">
+        <div class="kpi-icon" style="background: var(--primary-light); color: var(--primary);">📊</div>
         <div class="kpi-label">总客资数</div>
-        <div class="kpi-sub" id="kpiTotalSub">近7天 <b>0</b></div>
       </div>
+      <div class="kpi-value" id="kpiTotal">0</div>
+      <div class="kpi-sub" id="kpiTotalSub">近 7 天新增 <b>0</b></div>
     </div>
-    <div class="kpi-card">
-      <div class="kpi-icon" style="background: var(--green-light); color: var(--green);">🔒</div>
-      <div class="kpi-info">
-        <div class="kpi-value" id="kpiPrivate">0</div>
+    <div class="kpi-card" data-metric="inPrivate">
+      <span class="kpi-more">查看明细 →</span>
+      <div class="kpi-top">
+        <div class="kpi-icon" style="background: var(--green-light); color: var(--green);">🔒</div>
         <div class="kpi-label">已进私域</div>
-        <div class="kpi-sub">私域率 <b id="kpiPrivateRate">0%</b></div>
       </div>
+      <div class="kpi-value" id="kpiPrivate">0</div>
+      <div class="kpi-sub">私域率 <b id="kpiPrivateRate">0%</b></div>
     </div>
-    <div class="kpi-card">
-      <div class="kpi-icon" style="background: var(--orange-light); color: var(--orange);">📞</div>
-      <div class="kpi-info">
-        <div class="kpi-value" id="kpiFollowing">0</div>
+    <div class="kpi-card" data-metric="following">
+      <span class="kpi-more">查看明细 →</span>
+      <div class="kpi-top">
+        <div class="kpi-icon" style="background: var(--orange-light); color: var(--orange);">📞</div>
         <div class="kpi-label">跟进中客户</div>
-        <div class="kpi-sub">已成单 <b id="kpiDone">0</b></div>
       </div>
+      <div class="kpi-value" id="kpiFollowing">0</div>
+      <div class="kpi-sub">已成单 <b id="kpiDone">0</b></div>
     </div>
-    <div class="kpi-card">
-      <div class="kpi-icon" style="background: var(--red-light); color: var(--red);">⚠️</div>
-      <div class="kpi-info">
-        <div class="kpi-value" id="kpiWarn">0</div>
+    <div class="kpi-card" data-metric="warn">
+      <span class="kpi-more">查看明细 →</span>
+      <div class="kpi-top">
+        <div class="kpi-icon" style="background: var(--red-light); color: var(--red);">⚠️</div>
         <div class="kpi-label">预警客户</div>
-        <div class="kpi-sub" id="kpiWarnSub">已交接未跟进 <b>0</b></div>
+      </div>
+      <div class="kpi-value" id="kpiWarn">0</div>
+      <div class="kpi-sub" id="kpiWarnSub">无人跟进 <b>0</b></div>
+    </div>
+  </div>
+
+  <!-- ── 区块二：分析 ── -->
+  <div class="section">
+    <div class="section-head">
+      <h2>数据分析 <span class="hint">切换标签查看不同维度</span></h2>
+      <div class="tabs">
+        <button class="tab active" data-panel="trend" onclick="switchTab('trend', this)">线索趋势</button>
+        <button class="tab" data-panel="dist" onclick="switchTab('dist', this)">渠道与阶段</button>
+        <button class="tab" data-panel="year" onclick="switchTab('year', this)">年度分布</button>
+      </div>
+    </div>
+
+    <div class="tab-panel active" id="panel-trend">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+        <span style="font-size:12px;color:var(--text-muted);" id="trendCaption">按日统计</span>
+        <div class="tabs">
+          <button class="tab" data-grain="day" data-days="7" onclick="setTrend('day',7,this)">近7天</button>
+          <button class="tab" data-grain="day" data-days="30" onclick="setTrend('day',30,this)">近30天</button>
+          <button class="tab active" data-grain="month" data-days="12" onclick="setTrend('month',12,this)">近12月</button>
+          <button class="tab" data-grain="year" data-days="0" onclick="setTrend('year',0,this)">按年</button>
+        </div>
+      </div>
+      <div class="chart-container">
+        <svg class="chart-svg" id="trendChart" viewBox="0 0 680 200"></svg>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="panel-dist">
+      <div class="dist-grid">
+        <div>
+          <div class="dist-col-title">来源渠道分布</div>
+          <div id="sourceDist"></div>
+        </div>
+        <div>
+          <div class="dist-col-title">客户阶段分布</div>
+          <div id="stageDist"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="panel-year">
+      <div class="dist-grid">
+        <div>
+          <div class="dist-col-title">按年份</div>
+          <div id="yearDist"></div>
+        </div>
+        <div>
+          <div class="dist-col-title">按月份（近 12 月）</div>
+          <div id="monthDist"></div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- 筛选 -->
-  <div class="filter-bar">
-    <div class="filter-group">
-      <span class="filter-label">渠道</span>
-      <select class="filter-select" id="filterChannel" onchange="applyFilters()">
-        <option value="">全部</option>
-      </select>
-    </div>
-    <div class="filter-divider"></div>
-    <div class="filter-group">
-      <span class="filter-label">阶段</span>
-      <select class="filter-select" id="filterStage" onchange="applyFilters()">
-        <option value="">全部</option>
-        <option value="线索">线索</option>
-        <option value="跟进中">跟进中</option>
-        <option value="已交接未跟进">已交接未跟进</option>
-        <option value="已成单">已成单</option>
-      </select>
-    </div>
-    <div class="filter-divider"></div>
-    <div class="filter-group">
-      <span class="filter-label">私域</span>
-      <select class="filter-select" id="filterPrivate" onchange="applyFilters()">
-        <option value="">全部</option>
-        <option value="yes">已进私域</option>
-        <option value="no">未进私域</option>
-      </select>
-    </div>
-    <div class="filter-divider"></div>
-    <div class="filter-group">
-      <span class="filter-label">预警</span>
-      <select class="filter-select" id="filterWarn" onchange="applyFilters()">
-        <option value="">全部</option>
-        <option value="yes">只看预警</option>
-      </select>
-    </div>
-    <div class="filter-divider"></div>
-    <div class="filter-group">
-      <span class="filter-label">搜索</span>
-      <input type="text" class="filter-input" id="filterKeyword" placeholder="搜索昵称/编号/备注..." oninput="applyFilters()" style="width:200px;">
-    </div>
-    <div class="filter-group" style="margin-left:auto;">
-      <button class="btn btn-outline btn-sm" onclick="resetFilters()">重置</button>
-    </div>
-  </div>
-
-  <!-- 趋势图 -->
-  <div class="chart-section">
-    <div class="chart-head">
-      <h2>线索趋势</h2>
-      <div class="range-tabs">
-        <button class="range-tab" data-days="7" onclick="setRange(7, this)">近7天</button>
-        <button class="range-tab" data-days="14" onclick="setRange(14, this)">近14天</button>
-        <button class="range-tab active" data-days="30" onclick="setRange(30, this)">近30天</button>
-        <button class="range-tab" data-days="365" onclick="setRange(365, this)">全部</button>
+  <!-- ── 区块三：明细 ── -->
+  <div class="section">
+    <div class="section-head">
+      <h2>客户明细 <span class="hint">共 <span id="tableCount">0</span> 条 · 点击行展开详情</span></h2>
+      <div style="display:flex;gap:7px;align-items:center;">
+        <div class="tabs">
+          <button class="tab active" data-group="month" onclick="setGroup('month', this)">按月</button>
+          <button class="tab" data-group="year" onclick="setGroup('year', this)">按年</button>
+          <button class="tab" data-group="none" onclick="setGroup('none', this)">平铺</button>
+        </div>
+        <button class="btn btn-sm" onclick="copyData()">复制</button>
       </div>
     </div>
-    <div class="chart-container">
-      <svg class="chart-svg" id="trendChart" viewBox="0 0 680 200"></svg>
-    </div>
-  </div>
 
-  <!-- 渠道/阶段分布 -->
-  <div class="dist-grid">
-    <div class="dist-card">
-      <h2>来源渠道分布</h2>
-      <div id="sourceDist"></div>
-    </div>
-    <div class="dist-card">
-      <h2>客户阶段分布</h2>
-      <div id="stageDist"></div>
-    </div>
-  </div>
-
-  <!-- 表格 -->
-  <div class="table-section">
-    <div class="table-header">
-      <h2>客户明细 (<span id="tableCount">0</span> 条) <span id="tableHint" style="font-size:11px;color:var(--text-muted);font-weight:400;">点击行展开跟进详情</span></h2>
-      <div class="table-actions">
-        <button class="btn btn-outline btn-sm" onclick="copyData()">复制数据</button>
+    <div class="filter-bar">
+      <div class="filter-group">
+        <span class="filter-label">渠道</span>
+        <select class="filter-select" id="filterChannel" onchange="applyFilters()">
+          <option value="">全部</option>
+        </select>
+      </div>
+      <div class="filter-divider"></div>
+      <div class="filter-group">
+        <span class="filter-label">阶段</span>
+        <select class="filter-select" id="filterStage" onchange="applyFilters()">
+          <option value="">全部</option>
+          <option value="线索">线索</option>
+          <option value="跟进中">跟进中</option>
+          <option value="已交接未跟进">已交接未跟进</option>
+        </select>
+      </div>
+      <div class="filter-divider"></div>
+      <div class="filter-group">
+        <span class="filter-label">私域</span>
+        <select class="filter-select" id="filterPrivate" onchange="applyFilters()">
+          <option value="">全部</option>
+          <option value="yes">已进私域</option>
+          <option value="no">未进私域</option>
+        </select>
+      </div>
+      <div class="filter-divider"></div>
+      <div class="filter-group">
+        <span class="filter-label">预警</span>
+        <select class="filter-select" id="filterWarn" onchange="applyFilters()">
+          <option value="">全部</option>
+          <option value="yes">只看预警</option>
+        </select>
+      </div>
+      <div class="filter-divider"></div>
+      <div class="filter-group">
+        <span class="filter-label">搜索</span>
+        <input type="text" class="filter-input" id="filterKeyword" placeholder="昵称 / 编号 / 备注..." oninput="applyFilters()" style="width:170px;">
+      </div>
+      <div class="filter-group" style="margin-left:auto;">
+        <button class="btn btn-sm" onclick="resetFilters()">重置</button>
       </div>
     </div>
+
     <div class="table-scroll">
       <table class="data-table">
         <thead>
           <tr>
-            <th style="width:30px;"></th>
+            <th style="width:26px;"></th>
             <th>客户编号</th>
-            <th style="cursor:pointer;" onclick="toggleSort()" title="点击切换排序">日期 <span id="sortIndicator">▼</span></th>
+            <th style="cursor:pointer;" onclick="toggleSort()" title="点击切换排序">线索日期 <span id="sortIndicator">▼</span></th>
             <th>昵称</th>
             <th>渠道</th>
             <th>联系方式</th>
@@ -475,7 +583,24 @@ footer {
   </div>
 </div>
 
-<footer>数据快照由 WorkBuddy 每日自动同步 · 原始数据见腾讯文档「客户主表」<br>公网版已脱敏：手机号/微信号仅保留首尾片段，完整信息请在腾讯文档查看</footer>
+<footer>
+  数据快照由 WorkBuddy 每日自动同步 · 原始数据见腾讯文档「客户主表」<br>
+  公网版已脱敏：手机号 / 微信号仅保留首尾片段，完整信息请在腾讯文档查看
+</footer>
+
+<!-- ── KPI 明细弹窗 ── -->
+<div class="modal-overlay" id="metricModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div style="flex:1;">
+        <h3 id="modalTitle">明细</h3>
+        <div class="modal-desc" id="modalDesc"></div>
+      </div>
+      <button class="modal-close" onclick="closeMetricModal()">&times;</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -484,11 +609,14 @@ footer {
 // ── 状态 ────────────────────────────────
 let allData = [];
 let filteredData = [];
-let sortDesc = true;   // 默认最新在前
-let chartDays = 30;    // 默认近30天
-let openId = null;     // 当前展开的客户编号
+let sortDesc = true;
+let trendGrain = 'month';
+let trendSpan = 12;
+let groupMode = 'month';
+let openId = null;
+const collapsedMonths = new Set();   // 折叠的月份（默认全展开）
 
-// 主表列序（refresh.py 输出 24 列，第 1 行是列头）：
+// 主表列序（24 列，第 1 行是列头）：
 // 0 客户编号 | 1 线索日期 | 2 星期 | 3 抖音昵称 | 4 微信昵称 | 5 来源渠道
 // 6 留资方式 | 7 留资说明 | 8 是否进私域 | 9 联系方式 | 10 联系类型 | 11 意向等级
 // 12 首次添加时间 | 13 关注产品/服务 | 14 最近跟进日期 | 15 跟进方式 | 16 跟进内容摘要
@@ -501,7 +629,22 @@ const HEADERS = ['客户编号','线索日期','星期','抖音昵称','微信�
   '是否进私域','联系方式','联系类型','意向等级','首次添加时间','关注产品/服务','最近跟进日期','跟进方式',
   '跟进内容摘要','客户反馈','下次跟进日期','跟进状态','客户阶段','预警','客户具体信息','备注'];
 
-// 日期解析：优先 YYYY-MM-DD，兼容 2026/9/1、2026.9.1、M.D / M/D
+// 渠道归一化：金山表「客户来源」列有人填了推荐人姓名（如 叶长江同学 / 陈艳姐姐），
+// 合并时被当作渠道带入。这类非渠道值统一归到「转介绍」，避免渠道分布里出现人名。
+const CHANNEL_ALIASES = {
+  '叶长江同学': '转介绍',
+  '陈艳姐姐': '转介绍',
+  '直播': '直播间',
+  '抖音': '短视频',
+  '苏老师朋友圈': '朋友圈',
+};
+function normChannel(v) {
+  const s = (v || '').trim();
+  if (!s) return '';
+  return CHANNEL_ALIASES[s] || s;
+}
+
+// 日期解析：兼容 YYYY-MM-DD / YYYY/M/D / YYYY.M.D / M.D / M/D
 function parseDate(s) {
   if (!s) return null;
   let m = s.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/);
@@ -515,19 +658,20 @@ function parseDate(s) {
   }
   return null;
 }
-
 function dateNum(s) {
   const dt = parseDate(s);
   return dt ? dt.getFullYear() * 10000 + (dt.getMonth() + 1) * 100 + dt.getDate() : 0;
 }
-
-// 客户明细默认只展示 2026 年 9 月及以后（线索日期）；KPI / 趋势仍用全量
-const TABLE_SINCE = 20260901;
-function tableBase() {
-  return allData.filter(r => dateNum(r.date) >= TABLE_SINCE);
+function ymKey(s) {
+  const dt = parseDate(s);
+  return dt ? `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}` : '';
+}
+function yKey(s) {
+  const dt = parseDate(s);
+  return dt ? String(dt.getFullYear()) : '';
 }
 
-// ── CSV 解析（支持引号包裹的逗号/换行）──
+// ── CSV 解析 ────────────────────────────
 function parseCSV(text) {
   const rows = [];
   let row = [], cur = '', inQuote = false;
@@ -554,24 +698,59 @@ function buildRecords(csvText) {
   const out = [];
   for (const raw of parseCSV(csvText)) {
     while (raw.length < COLUMNS.length) raw.push('');
-    if (raw[0].trim() === '客户编号') continue;   // 跳过列头行
+    if (raw[0].trim() === '客户编号') continue;
     if (raw.every(c => c.trim() === '')) continue;
     const rec = {};
     COLUMNS.forEach((col, i) => { rec[col] = (raw[i] || '').trim(); });
+    rec.channel = normChannel(rec.channel);
     out.push(rec);
   }
   return out;
 }
 
-const isYes = v => v.trim() === '是';
+const isYes = v => (v || '').trim() === '是';
 const hasWarn = r => !!r.warn;
 
-// ── KPI ─────────────────────────────────
+// ── KPI 口径定义（点卡片看明细）──────────
+const METRICS = {
+  total: {
+    title: '总客资数',
+    desc: '全部客资记录数，含各年份全部渠道。下方按年份与渠道展示分布。',
+    items: () => allData,
+    extra: r => `${r.date || '—'} · ${r.channel || '未标注渠道'}`,
+  },
+  inPrivate: {
+    title: '已进私域',
+    desc: '「是否进私域」列为「是」的客户。私域率 = 已进私域 ÷ 总客资数。',
+    items: () => allData.filter(r => isYes(r.in_private)),
+    extra: r => `${r.channel || '未标注渠道'} · ${r.intent ? r.intent + ' 级' : '未定级'}`,
+  },
+  following: {
+    title: '跟进中客户',
+    desc: '「客户阶段」为「跟进中」的客户（销售已接手、正在推进）。',
+    items: () => allData.filter(r => r.stage === '跟进中'),
+    extra: r => `${r.channel || '未标注渠道'} · 最近跟进 ${r.last_follow || '—'}`,
+  },
+  warn: {
+    title: '预警客户',
+    desc: '「预警」列非空的客户。预警由系统按规则自动标注，目前有两类：'
+        + '「⚠进私域无人跟进」= 已进私域但没有销售跟进记录；'
+        + '「⚠日期格式错」= 下次跟进日期填写不规范（如写成「下个-初」），无法排期。',
+    items: () => allData.filter(hasWarn),
+    extra: r => r.warn,
+    groupBy: r => r.warn,
+  },
+};
+
+// ── KPI 渲染 ────────────────────────────
 function computeSummary(rows) {
   const now = new Date();
   const todayTs = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
   const weekStartTs = todayTs - 6 * 86400000;
-  const week = rows.filter(r => { const dt = parseDate(r.date); return dt && dt.getTime() >= weekStartTs && dt.getTime() <= todayTs; }).length;
+  const week = rows.filter(r => {
+    const dt = parseDate(r.date);
+    return dt && dt.getTime() >= weekStartTs && dt.getTime() <= todayTs;
+  }).length;
   return {
     total: rows.length,
     in_private: rows.filter(r => isYes(r.in_private)).length,
@@ -585,20 +764,74 @@ function computeSummary(rows) {
 
 function renderKPI(s) {
   document.getElementById('kpiTotal').textContent = s.total;
-  document.getElementById('kpiTotalSub').innerHTML = `近7天 <b>${s.week_new}</b>`;
+  document.getElementById('kpiTotalSub').innerHTML = `近 7 天新增 <b>${s.week_new}</b>`;
   document.getElementById('kpiPrivate').textContent = s.in_private;
   document.getElementById('kpiPrivateRate').textContent = s.total ? Math.round(s.in_private / s.total * 100) + '%' : '—';
   document.getElementById('kpiFollowing').textContent = s.following;
   document.getElementById('kpiDone').textContent = s.done;
   document.getElementById('kpiWarn').textContent = s.warn;
-  document.getElementById('kpiWarnSub').innerHTML = `已交接未跟进 <b>${s.warn_unfollowed}</b>`;
+  document.getElementById('kpiWarnSub').innerHTML = `无人跟进 <b>${s.warn_unfollowed}</b>`;
+}
+
+// ── KPI 明细弹窗 ────────────────────────
+function openMetric(key) {
+  const m = METRICS[key];
+  if (!m) return;
+  const items = m.items();
+  document.getElementById('modalTitle').textContent = `${m.title}（${items.length} 条）`;
+  document.getElementById('modalDesc').textContent = m.desc;
+
+  const body = document.getElementById('modalBody');
+  if (!items.length) {
+    body.innerHTML = '<div style="color:var(--text-muted);padding:16px 0;">暂无符合条件的客户</div>';
+  } else if (m.groupBy) {
+    const groups = new Map();
+    for (const r of items) {
+      const g = m.groupBy(r) || '其他';
+      if (!groups.has(g)) groups.set(g, []);
+      groups.get(g).push(r);
+    }
+    body.innerHTML = [...groups.entries()].map(([g, list]) => `
+      <h4>${escapeHtml(g)}（${list.length} 条）</h4>
+      ${list.map(r => modalItemHtml(r, m)).join('')}
+    `).join('');
+  } else {
+    body.innerHTML = items.map(r => modalItemHtml(r, m)).join('');
+  }
+
+  document.getElementById('metricModal').classList.add('active');
+  document.querySelectorAll('.kpi-card').forEach(c => {
+    c.classList.toggle('active', c.dataset.metric === key);
+  });
+}
+
+function modalItemHtml(r, m) {
+  const nick = r.nick_douyin || r.nick_wechat || '（未填昵称）';
+  return `<div class="modal-item">
+    <span class="mi-id">${escapeHtml(r.id)}</span>
+    <span class="mi-nick">${escapeHtml(nick)}</span>
+    <span class="mi-extra">${escapeHtml(m.extra ? m.extra(r) : '')}</span>
+  </div>`;
+}
+
+function closeMetricModal() {
+  document.getElementById('metricModal').classList.remove('active');
+  document.querySelectorAll('.kpi-card').forEach(c => c.classList.remove('active'));
+}
+
+// ── Tab 切换 ────────────────────────────
+function switchTab(name, btn) {
+  document.querySelectorAll('.section-head .tab[data-panel]').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('panel-' + name).classList.add('active');
 }
 
 // ── 筛选 ────────────────────────────────
 function fillChannelOptions() {
   const sel = document.getElementById('filterChannel');
-  const set = new Set(tableBase().map(r => r.channel).filter(Boolean));
-  [...set].sort().forEach(c => {
+  const set = new Set(allData.map(r => r.channel).filter(Boolean));
+  [...set].sort((a, b) => a.localeCompare(b, 'zh')).forEach(c => {
     const op = document.createElement('option');
     op.value = c; op.textContent = c;
     sel.appendChild(op);
@@ -612,7 +845,7 @@ function applyFilters() {
   const warn = document.getElementById('filterWarn').value;
   const keyword = document.getElementById('filterKeyword').value.toLowerCase().trim();
 
-  filteredData = tableBase().filter(r => {
+  filteredData = allData.filter(r => {
     if (channel && r.channel !== channel) return false;
     if (stage === '已交接未跟进' && !r.stage.includes('已交接未跟进')) return false;
     else if (stage && stage !== '已交接未跟进' && r.stage !== stage) return false;
@@ -620,7 +853,7 @@ function applyFilters() {
     if (priv === 'no' && isYes(r.in_private)) return false;
     if (warn === 'yes' && !hasWarn(r)) return false;
     if (keyword) {
-      const haystack = [r.id, r.nick_douyin, r.nick_wechat, r.channel, r.remark, r.follow_note, r.product].join(' ').toLowerCase();
+      const haystack = [r.id, r.nick_douyin, r.nick_wechat, r.channel, r.remark, r.product].join(' ').toLowerCase();
       if (!haystack.includes(keyword)) return false;
     }
     return true;
@@ -629,19 +862,29 @@ function applyFilters() {
 }
 
 function resetFilters() {
-  document.getElementById('filterChannel').value = '';
-  document.getElementById('filterStage').value = '';
-  document.getElementById('filterPrivate').value = '';
-  document.getElementById('filterWarn').value = '';
-  document.getElementById('filterKeyword').value = '';
-  filteredData = tableBase();
+  ['filterChannel','filterStage','filterPrivate','filterWarn','filterKeyword']
+    .forEach(id => { document.getElementById(id).value = ''; });
+  filteredData = [...allData];
   renderTable();
 }
 
-// ── 排序 ────────────────────────────────
+// ── 排序 / 分组 ─────────────────────────
 function toggleSort() {
   sortDesc = !sortDesc;
   document.getElementById('sortIndicator').textContent = sortDesc ? '▼' : '▲';
+  renderTable();
+}
+
+function setGroup(mode, btn) {
+  groupMode = mode;
+  document.querySelectorAll('.section-head .tab[data-group]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTable();
+}
+
+function toggleMonth(key) {
+  if (collapsedMonths.has(key)) collapsedMonths.delete(key);
+  else collapsedMonths.add(key);
   renderTable();
 }
 
@@ -675,7 +918,7 @@ function detailHtml(r) {
     ${item('意向等级', r.intent)}${item('关注产品/服务', r.product)}${item('最近跟进日期', r.last_follow)}
     ${item('跟进方式', r.follow_way)}${item('跟进状态', r.follow_status)}${item('下次跟进日期', r.next_follow)}
     <div class="detail-item" style="grid-column:1/-1;">
-      <span class="k">跟进内容摘要 / 客户反馈 / 客户具体信息</span>
+      <span class="k">跟进内容 / 客户反馈 / 客户具体信息</span>
       <span class="v" style="color:var(--text-muted);">（内部记录，公网不展示，请在腾讯文档查看）</span>
     </div>
     <div class="detail-seg">④ 其他</div>
@@ -683,38 +926,27 @@ function detailHtml(r) {
   </div></td></tr>`;
 }
 
-function renderTable() {
-  const tbody = document.getElementById('tableBody');
-  const data = [...filteredData].sort((a, b) => sortDesc ? dateNum(b.date) - dateNum(a.date) : dateNum(a.date) - dateNum(b.date));
+function mainRowHtml(r) {
+  let nicks = '';
+  if (r.nick_douyin) nicks += `<span class="tag tag-douyin">${escapeHtml(r.nick_douyin)}</span> `;
+  if (r.nick_wechat) nicks += `<span class="tag tag-wechat">${escapeHtml(r.nick_wechat)}</span> `;
 
-  if (data.length === 0) {
-    tbody.innerHTML = '<tr class="empty-row"><td colspan="10">暂无符合条件的客户数据</td></tr>';
-    document.getElementById('tableCount').textContent = '0';
-    return;
-  }
+  const privateBadge = isYes(r.in_private)
+    ? '<span class="badge badge-yes">已进</span>'
+    : '<span class="badge badge-no">未进</span>';
 
-  let html = '';
-  for (const r of data) {
-    let nicks = '';
-    if (r.nick_douyin) nicks += `<span class="tag tag-douyin">${escapeHtml(r.nick_douyin)}</span> `;
-    if (r.nick_wechat) nicks += `<span class="tag tag-wechat">${escapeHtml(r.nick_wechat)}</span> `;
+  const contactCell = r.contact
+    ? `<span class="contact-masked" title="已脱敏，完整信息请在腾讯文档查看">${escapeHtml(r.contact)}</span>`
+    : '<span style="color:var(--text-muted)">—</span>';
 
-    const privateBadge = isYes(r.in_private)
-      ? '<span class="badge badge-yes">已进</span>'
-      : '<span class="badge badge-no">未进</span>';
+  const warnCell = r.warn
+    ? `<span class="badge badge-warn">${escapeHtml(r.warn)}</span>`
+    : '<span style="color:var(--text-muted)">—</span>';
 
-    const contactCell = r.contact
-      ? `<span class="contact-masked" title="已脱敏，完整信息请在腾讯文档查看">${escapeHtml(r.contact)}</span>`
-      : '<span style="color:var(--text-muted)">—</span>';
-
-    const warnCell = r.warn
-      ? `<span class="badge badge-warn">${escapeHtml(r.warn)}</span>`
-      : '<span style="color:var(--text-muted)">—</span>';
-
-    const open = openId === r.id;
-    html += `<tr class="main-row${open ? ' open' : ''}" onclick="toggleDetail('${escapeHtml(r.id)}')">
+  const open = openId === r.id;
+  return `<tr class="main-row${open ? ' open' : ''}" onclick="toggleDetail('${escapeHtml(r.id)}')">
       <td><span class="caret">▶</span></td>
-      <td style="font-family:ui-monospace,monospace;font-size:12px;">${escapeHtml(r.id)}</td>
+      <td style="font-family:ui-monospace,monospace;font-size:11.5px;">${escapeHtml(r.id)}</td>
       <td style="white-space:nowrap;">${escapeHtml(r.date)}${r.weekday ? ' ' + escapeHtml(r.weekday) : ''}</td>
       <td>${nicks || '<span style="color:var(--text-muted)">—</span>'}</td>
       <td>${escapeHtml(r.channel) || '<span style="color:var(--text-muted)">—</span>'}</td>
@@ -723,77 +955,136 @@ function renderTable() {
       <td>${intentBadge(r.intent)}</td>
       <td>${stageBadge(r.stage)}</td>
       <td>${warnCell}</td>
-    </tr>`;
-    if (open) html += detailHtml(r);
+    </tr>${open ? detailHtml(r) : ''}`;
+}
+
+function renderTable() {
+  const tbody = document.getElementById('tableBody');
+  const data = [...filteredData].sort((a, b) =>
+    sortDesc ? dateNum(b.date) - dateNum(a.date) : dateNum(a.date) - dateNum(b.date));
+
+  if (data.length === 0) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="10">暂无符合条件的客户数据</td></tr>';
+    document.getElementById('tableCount').textContent = '0';
+    return;
   }
+
+  let html = '';
+  if (groupMode === 'none') {
+    html = data.map(mainRowHtml).join('');
+  } else {
+    // 按 年 / 月 分组：分组头可点击折叠
+    const groups = new Map();
+    for (const r of data) {
+      const key = groupMode === 'year' ? (yKey(r.date) || '未知年份') : (ymKey(r.date) || '未知月份');
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(r);
+    }
+    const keys = [...groups.keys()].sort((a, b) => sortDesc ? b.localeCompare(a) : a.localeCompare(b));
+    for (const key of keys) {
+      const list = groups.get(key);
+      const collapsed = collapsedMonths.has(key);
+      const label = groupMode === 'year'
+        ? `${key} 年`
+        : `${key.slice(0, 4)} 年 ${parseInt(key.slice(5), 10)} 月`;
+      html += `<tr class="month-row${collapsed ? '' : ' open'}" onclick="toggleMonth('${key}')">
+          <td colspan="10">
+            <span class="month-caret">▶</span>${escapeHtml(label)}
+            <span class="month-count">· ${list.length} 条</span>
+          </td>
+        </tr>`;
+      if (!collapsed) html += list.map(mainRowHtml).join('');
+    }
+  }
+
   tbody.innerHTML = html;
   document.getElementById('tableCount').textContent = data.length;
-  const hidden = allData.length - tableBase().length;
-  const hint = document.getElementById('tableHint');
-  if (hint) {
-    hint.textContent = hidden
-      ? `已隐藏 9 月前 ${hidden} 条 · 点击行展开跟进详情`
-      : '点击行展开跟进详情';
-  }
 }
 
 // ── 趋势图 ──────────────────────────────
-function setRange(days, btn) {
-  chartDays = days;
-  document.querySelectorAll('.range-tab').forEach(b => b.classList.remove('active'));
+function setTrend(grain, span, btn) {
+  trendGrain = grain;
+  trendSpan = span;
+  document.querySelectorAll('#panel-trend .tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   renderChart();
 }
 
+function trendBuckets() {
+  const today = new Date();
+  const buckets = [];
+  if (trendGrain === 'day') {
+    for (let i = trendSpan - 1; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      buckets.push({ key, label: `${d.getMonth() + 1}/${d.getDate()}`, title: `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`, count: 0 });
+    }
+  } else if (trendGrain === 'month') {
+    for (let i = trendSpan - 1; i >= 0; i--) {
+      const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      buckets.push({ key, label: `${d.getFullYear() % 100}/${d.getMonth() + 1}`, title: `${d.getFullYear()} 年 ${d.getMonth() + 1} 月`, count: 0 });
+    }
+  } else {
+    const years = [...new Set(allData.map(r => yKey(r.date)).filter(Boolean))].sort();
+    if (!years.length) years.push(String(today.getFullYear()));
+    for (const y of years) buckets.push({ key: y, label: y, title: `${y} 年`, count: 0 });
+  }
+  return buckets;
+}
+
 function renderChart() {
   const svg = document.getElementById('trendChart');
-  const today = new Date();
-  const days = [];
-  for (let i = chartDays - 1; i >= 0; i--) {
-    const d = new Date(today);
-    d.setDate(d.getDate() - i);
-    const m = d.getMonth() + 1, day = d.getDate();
-    days.push({ label: `${m}.${day}`, shortLabel: `${m}/${day}`, ts: new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime(), count: 0 });
-  }
+  const buckets = trendBuckets();
+
   for (const r of allData) {
-    const dt = parseDate(r.date);
-    if (!dt) continue;
-    for (const day of days) {
-      if (dt.getTime() === day.ts) day.count++;
-    }
+    let key;
+    if (trendGrain === 'day') {
+      const dt = parseDate(r.date);
+      if (!dt) continue;
+      key = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+    } else if (trendGrain === 'month') key = ymKey(r.date);
+    else key = yKey(r.date);
+    const b = buckets.find(x => x.key === key);
+    if (b) b.count++;
   }
 
-  const maxCount = Math.max(...days.map(d => d.count), 1);
-  const svgW = 680, chartHeight = 140, chartTop = 30, chartLeft = 40;
+  const cap = document.getElementById('trendCaption');
+  cap.textContent = trendGrain === 'day' ? '按日统计（每条 = 1 天）'
+    : trendGrain === 'month' ? '按月统计（每条 = 1 个月）' : '按年统计（每条 = 1 年）';
+
+  const maxCount = Math.max(...buckets.map(d => d.count), 1);
+  const svgW = 680, chartHeight = 140, chartTop = 26, chartLeft = 40;
   const plotW = svgW - chartLeft - 20;
-  const barSlot = plotW / days.length;
-  const barWidth = Math.max(Math.min(barSlot - 8, 46), 3);
-  const dense = chartDays > 30;
-  const labelStep = chartDays <= 14 ? 1 : (chartDays <= 30 ? 2 : Math.ceil(chartDays / 15));
+  const slot = plotW / buckets.length;
+  const barWidth = Math.max(Math.min(slot - 10, 52), 4);
+  const dense = buckets.length > 24;
+  const labelStep = buckets.length <= 14 ? 1 : Math.ceil(buckets.length / 13);
   let s = '';
 
-  s += `<line x1="${chartLeft}" y1="${chartTop}" x2="${chartLeft}" y2="${chartTop + chartHeight}" stroke="#e9ecef" stroke-width="1"/>`;
-  s += `<line x1="${chartLeft}" y1="${chartTop + chartHeight}" x2="${chartLeft + plotW}" y2="${chartTop + chartHeight}" stroke="#e9ecef" stroke-width="1"/>`;
+  s += `<line x1="${chartLeft}" y1="${chartTop}" x2="${chartLeft}" y2="${chartTop + chartHeight}" stroke="#e8eaed" stroke-width="1"/>`;
+  s += `<line x1="${chartLeft}" y1="${chartTop + chartHeight}" x2="${chartLeft + plotW}" y2="${chartTop + chartHeight}" stroke="#e8eaed" stroke-width="1"/>`;
 
   const ticks = Math.min(maxCount, 5);
   for (let i = 0; i <= ticks; i++) {
     const y = chartTop + chartHeight - (i / ticks) * chartHeight;
     const label = Math.round(i * maxCount / ticks);
     if (label === 0) continue;
-    s += `<line x1="${chartLeft - 4}" y1="${y}" x2="${chartLeft}" y2="${y}" stroke="#adb5bd" stroke-width="1"/>`;
-    s += `<text x="${chartLeft - 8}" y="${y + 4}" text-anchor="end" font-size="10" fill="#adb5bd">${label}</text>`;
+    s += `<line x1="${chartLeft - 4}" y1="${y}" x2="${chartLeft}" y2="${y}" stroke="#cbd5e1" stroke-width="1"/>`;
+    s += `<text x="${chartLeft - 8}" y="${y + 4}" text-anchor="end" font-size="10" fill="#9ca3af">${label}</text>`;
   }
 
-  days.forEach((day, i) => {
-    const barHeight = day.count > 0 ? (day.count / maxCount) * chartHeight : 2;
-    const x = chartLeft + i * barSlot + (barSlot - barWidth) / 2;
+  buckets.forEach((b, i) => {
+    const barHeight = b.count > 0 ? (b.count / maxCount) * chartHeight : 2;
+    const x = chartLeft + i * slot + (slot - barWidth) / 2;
     const y = chartTop + chartHeight - barHeight;
-    s += `<rect x="${x}" y="${y}" width="${barWidth}" height="${barHeight}" rx="${dense ? 1 : 4}" fill="${day.count > 0 ? '#6366f1' : '#e9ecef'}"><title>${day.label}：${day.count} 条</title></rect>`;
-    if (day.count > 0 && !dense) {
-      s += `<text x="${x + barWidth / 2}" y="${y - 6}" text-anchor="middle" font-size="12" font-weight="600" fill="#6366f1">${day.count}</text>`;
+    s += `<rect x="${x}" y="${y}" width="${barWidth}" height="${barHeight}" rx="${dense ? 1 : 3}" fill="${b.count > 0 ? '#4f46e5' : '#e8eaed'}"><title>${b.title}：${b.count} 条</title></rect>`;
+    if (b.count > 0 && !dense) {
+      s += `<text x="${x + barWidth / 2}" y="${y - 5}" text-anchor="middle" font-size="11.5" font-weight="600" fill="#4f46e5">${b.count}</text>`;
     }
-    if (i % labelStep === 0 || i === days.length - 1) {
-      s += `<text x="${x + barWidth / 2}" y="${chartTop + chartHeight + 18}" text-anchor="middle" font-size="${dense ? 9 : (chartDays > 14 ? 9 : 11)}" fill="#6c757d">${day.shortLabel}</text>`;
+    if (i % labelStep === 0 || i === buckets.length - 1) {
+      s += `<text x="${x + barWidth / 2}" y="${chartTop + chartHeight + 17}" text-anchor="middle" font-size="${dense ? 9 : 10.5}" fill="#6b7280">${b.label}</text>`;
     }
   });
 
@@ -803,24 +1094,20 @@ function renderChart() {
 // ── 分布条 ──────────────────────────────
 const CHANNEL_COLORS = {
   '直播间': '#4f46e5',
-  '直播': '#4338ca',
   '短视频': '#ea580c',
   '短视频+直播间': '#0d9488',
   '朋友圈': '#16a34a',
-  '苏老师朋友圈': '#15803d',
   '视频号直播': '#dc2626',
   '微信小店': '#0284c7',
   '抖音直播': '#7c3aed',
-  '抖音': '#db2777',
-  '叶长江同学': '#ca8a04',
-  '陈艳姐姐': '#c026d3',
+  '转介绍': '#ca8a04',
+  '其他': '#64748b',
   '未标注': '#94a3b8',
 };
 const CHANNEL_FALLBACK = ['#0891b2', '#b45309', '#be185d', '#365314', '#1e40af', '#9a3412'];
 const STAGE_COLORS = {
   '跟进中': '#16a34a',
   '线索': '#4f46e5',
-  '已成单': '#0d9488',
   '未标注': '#94a3b8',
 };
 
@@ -832,11 +1119,11 @@ function colorForStage(name) {
   return STAGE_COLORS[name] || '#64748b';
 }
 
-function renderDist(elId, counter, colorFn) {
+function renderDist(elId, counter, colorFn, limit) {
   const el = document.getElementById(elId);
-  const entries = [...counter.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8);
+  const entries = [...counter.entries()].sort((a, b) => b[1] - a[1]).slice(0, limit || 8);
   if (entries.length === 0) {
-    el.innerHTML = '<div style="color:var(--text-muted);font-size:13px;">暂无数据</div>';
+    el.innerHTML = '<div style="color:var(--text-muted);font-size:12.5px;">暂无数据</div>';
     return;
   }
   const max = entries[0][1];
@@ -848,7 +1135,7 @@ function renderDist(elId, counter, colorFn) {
     <div class="dist-row">
       <span class="dist-swatch" style="background:${color}"></span>
       <span class="dist-name" title="${escapeHtml(name)}">${escapeHtml(name)}</span>
-      <span class="dist-bar"><span class="dist-bar-fill" style="width:${Math.max(val / max * 100, 6)}%;background:${color}"></span></span>
+      <span class="dist-bar"><span class="dist-bar-fill" style="width:${Math.max(val / max * 100, 5)}%;background:${color}"></span></span>
       <span class="dist-pct">${pct}%</span>
       <span class="dist-val" style="color:${color}">${val}</span>
     </div>`;
@@ -869,6 +1156,30 @@ function renderDistributions() {
     stageCounter.set(name, (stageCounter.get(name) || 0) + 1);
   }
   renderDist('stageDist', stageCounter, colorForStage);
+
+  // 年度分布
+  const yearCounter = new Map();
+  for (const r of allData) {
+    const name = yKey(r.date) || '未知';
+    yearCounter.set(name, (yearCounter.get(name) || 0) + 1);
+  }
+  renderDist('yearDist', yearCounter, (n, i) => CHANNEL_FALLBACK[i % CHANNEL_FALLBACK.length], 12);
+
+  // 月度分布（近 12 个月）
+  const monthCounter = new Map();
+  const now = new Date();
+  const recent = [];
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    recent.push(key);
+    monthCounter.set(key, 0);
+  }
+  for (const r of allData) {
+    const k = ymKey(r.date);
+    if (monthCounter.has(k)) monthCounter.set(k, monthCounter.get(k) + 1);
+  }
+  renderDist('monthDist', monthCounter, (n, i) => CHANNEL_FALLBACK[(i + 2) % CHANNEL_FALLBACK.length], 12);
 }
 
 // ── 复制 ────────────────────────────────
@@ -898,6 +1209,18 @@ function escapeHtml(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// ── 事件绑定 ────────────────────────────
+document.getElementById('kpiGrid').addEventListener('click', e => {
+  const card = e.target.closest('.kpi-card');
+  if (card) openMetric(card.dataset.metric);
+});
+document.getElementById('metricModal').addEventListener('click', function(e) {
+  if (e.target === this) closeMetricModal();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeMetricModal();
+});
+
 // ── 初始化 ──────────────────────────────
 (function init() {
   const snap = window.__SNAPSHOT__;
@@ -907,7 +1230,7 @@ function escapeHtml(str) {
     return;
   }
   allData = buildRecords(snap.csv);
-  filteredData = tableBase();
+  filteredData = [...allData];
   document.getElementById('updateTime').textContent = '数据快照更新于 ' + snap.updated_at;
   fillChannelOptions();
   renderKPI(computeSummary(allData));
