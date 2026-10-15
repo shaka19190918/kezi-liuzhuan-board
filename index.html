@@ -211,6 +211,14 @@ body {
 
 .chart-container { width: 100%; overflow-x: auto; }
 .chart-svg { width: 100%; min-width: 480px; }
+/* 柱状图颜色图例（需求④：颜色区分数量高低） */
+.chart-legend {
+  display: flex; flex-wrap: wrap; gap: 6px 16px;
+  margin-top: 8px; padding-left: 40px;
+  font-size: 11.5px; color: var(--text-muted);
+}
+.chart-legend .lg-item { display: inline-flex; align-items: center; gap: 5px; }
+.chart-legend .lg-dot { width: 11px; height: 11px; border-radius: 2px; display: inline-block; }
 
 /* ── 分布条 ── */
 .dist-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 32px; }
@@ -623,13 +631,15 @@ footer {
         <div class="tabs">
           <button class="tab" data-grain="day" data-days="7" onclick="setTrend('day',7,this)">近7天</button>
           <button class="tab" data-grain="day" data-days="30" onclick="setTrend('day',30,this)">近30天</button>
-          <button class="tab active" data-grain="month" data-days="12" onclick="setTrend('month',12,this)">近12月</button>
+          <button class="tab active" data-grain="month" data-days="0" onclick="setTrend('month',0,this)">全部月份</button>
+          <button class="tab" data-grain="month" data-days="12" onclick="setTrend('month',12,this)">近12月</button>
           <button class="tab" data-grain="year" data-days="0" onclick="setTrend('year',0,this)">按年</button>
         </div>
       </div>
       <div class="chart-container">
         <svg class="chart-svg" id="trendChart" viewBox="0 0 680 200"></svg>
       </div>
+      <div class="chart-legend" id="trendLegend"></div>
     </div>
 
     <div class="tab-panel" id="panel-dist">
@@ -784,7 +794,7 @@ let filteredData = [];
 let pendingIds = new Set();          // 待补录客户编号（来自线上历史，主表还没填）
 let sortDesc = true;
 let trendGrain = 'month';
-let trendSpan = 12;
+let trendSpan = 0;   // 0 = 全部月份（默认展示全量月份变化，用户 2026-10-15 要求）
 let groupMode = 'month';
 let openId = null;
 let modalMetricKey = null;
@@ -1570,23 +1580,38 @@ function trendBuckets() {
       buckets.push({ key, label: `${d.getMonth() + 1}/${d.getDate()}`, title: `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`, count: 0 });
     }
   } else if (trendGrain === 'month') {
-    for (let i = trendSpan - 1; i >= 0; i--) {
-      const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-      buckets.push({ key, label: `${d.getFullYear() % 100}/${d.getMonth() + 1}`, title: `${d.getFullYear()} 年 ${d.getMonth() + 1} 月`, count: 0 });
+    if (trendSpan > 0) {
+      // 近 N 月：以今天为终点向前推
+      for (let i = trendSpan - 1; i >= 0; i--) {
+        const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        buckets.push({ key, label: `${d.getFullYear() % 100}/${d.getMonth() + 1}`, title: `${d.getFullYear()} 年 ${d.getMonth() + 1} 月`, count: 0 });
+      }
+    } else {
+      // 全部月份：按数据里实际出现过的月份连续铺满（含中间 0 条的月份），
+      // 这样「每个月的变化」一眼看得完整，不会因为断月而误读。
+      const keys = [...new Set(allData.map(r => ymKey(r.date)).filter(Boolean))].sort();
+      if (!keys.length) return buckets;
+      const [fy, fm] = keys[0].split('-').map(Number);
+      const [ly, lm] = keys[keys.length - 1].split('-').map(Number);
+      let y = fy, mo = fm;
+      while (y < ly || (y === ly && mo <= lm)) {
+        const key = `${y}-${String(mo).padStart(2, '0')}`;
+        buckets.push({ key, label: `${y % 100}/${mo}`, title: `${y} 年 ${mo} 月`, count: 0 });
+        mo++;
+        if (mo > 12) { mo = 1; y++; }
+      }
     }
   } else {
     const years = [...new Set(allData.map(r => yKey(r.date)).filter(Boolean))].sort();
     if (!years.length) years.push(String(today.getFullYear()));
     for (const y of years) buckets.push({ key: y, label: y, title: `${y} 年`, count: 0 });
   }
-  return buckets;
+  return fillTrendCounts(buckets);
 }
 
-function renderChart() {
-  const svg = document.getElementById('trendChart');
-  const buckets = trendBuckets();
-
+// 把 allData 按当前粒度灌进桶里（与 trendBuckets 分离，便于复用与自测）
+function fillTrendCounts(buckets) {
   for (const r of allData) {
     let key;
     if (trendGrain === 'day') {
@@ -1598,10 +1623,18 @@ function renderChart() {
     const b = buckets.find(x => x.key === key);
     if (b) b.count++;
   }
+  return buckets;
+}
+
+function renderChart() {
+  const svg = document.getElementById('trendChart');
+  const buckets = trendBuckets();
 
   const cap = document.getElementById('trendCaption');
-  cap.textContent = trendGrain === 'day' ? '按日统计（每条 = 1 天）'
-    : trendGrain === 'month' ? '按月统计（每条 = 1 个月）' : '按年统计（每条 = 1 年）';
+  const totalCount = buckets.reduce((a, b) => a + b.count, 0);
+  cap.textContent = (trendGrain === 'day' ? '按日统计（每条 = 1 天）'
+    : trendGrain === 'month' ? (trendSpan > 0 ? `按月统计 · 近 ${trendSpan} 个月` : '按月统计 · 全部月份')
+    : '按年统计（每条 = 1 年）') + ` · 共 ${totalCount} 条`;
 
   const maxCount = Math.max(...buckets.map(d => d.count), 1);
   const svgW = 680, chartHeight = 140, chartTop = 26, chartLeft = 40;
@@ -1624,13 +1657,30 @@ function renderChart() {
     s += `<text x="${chartLeft - 8}" y="${y + 4}" text-anchor="end" font-size="10" fill="#9ca3af">${label}</text>`;
   }
 
+  // ── 柱色按「数量高低」分档（需求④：柱状图用颜色区分）──
+  // 档位固定语义：越多越红（暖色=量大，需要关注产能），越少越冷。
+  // 用固定阈值而不是相对排名，这样不同时间粒度下同一数量的颜色一致，便于横向对比。
+  const levelOf = n => {
+    if (n === 0) return -1;
+    const r = n / maxCount;
+    if (r >= 0.75) return 3;   // 高峰
+    if (r >= 0.5) return 2;    // 中高
+    if (r >= 0.25) return 1;   // 中
+    return 0;                  // 低
+  };
+  const LEVEL_COLORS = ['#93c5fd', '#60a5fa', '#f59e0b', '#dc2626'];
+  const LEVEL_NAMES = ['低（<25%）', '中（25%~50%）', '中高（50%~75%）', '高峰（≥75%）'];
+  const colorOf = n => n === 0 ? '#e8eaed' : LEVEL_COLORS[levelOf(n)];
+  const usedLevels = new Set(buckets.map(b => levelOf(b.count)).filter(l => l >= 0));
+
   buckets.forEach((b, i) => {
     const barHeight = b.count > 0 ? (b.count / maxCount) * chartHeight : 2;
     const x = chartLeft + i * slot + (slot - barWidth) / 2;
     const y = chartTop + chartHeight - barHeight;
-    s += `<rect x="${x}" y="${y}" width="${barWidth}" height="${barHeight}" rx="${dense ? 1 : 3}" fill="${b.count > 0 ? '#4f46e5' : '#e8eaed'}"><title>${b.title}：${b.count} 条</title></rect>`;
+    const fill = colorOf(b.count);
+    s += `<rect x="${x}" y="${y}" width="${barWidth}" height="${barHeight}" rx="${dense ? 1 : 3}" fill="${fill}"><title>${b.title}：${b.count} 条</title></rect>`;
     if (b.count > 0 && !dense) {
-      s += `<text x="${x + barWidth / 2}" y="${y - 5}" text-anchor="middle" font-size="11.5" font-weight="600" fill="#4f46e5">${b.count}</text>`;
+      s += `<text x="${x + barWidth / 2}" y="${y - 5}" text-anchor="middle" font-size="11.5" font-weight="600" fill="${fill}">${b.count}</text>`;
     }
     if (i % labelStep === 0 || i === buckets.length - 1) {
       s += `<text x="${x + barWidth / 2}" y="${chartTop + chartHeight + 17}" text-anchor="middle" font-size="${dense ? 9 : 10.5}" fill="#6b7280">${b.label}</text>`;
@@ -1638,6 +1688,14 @@ function renderChart() {
   });
 
   svg.innerHTML = s;
+
+  // 图例：说明颜色含义（只显示当前实际用到的档位）
+  const lg = document.getElementById('trendLegend');
+  if (lg) {
+    lg.innerHTML = LEVEL_COLORS.map((c, i) => usedLevels.has(i)
+      ? `<span class="lg-item"><span class="lg-dot" style="background:${c}"></span>${LEVEL_NAMES[i]}</span>`
+      : '').join('') + `<span class="lg-item"><span class="lg-dot" style="background:#e8eaed"></span>0 条</span>`;
+  }
 }
 
 // ── 分布条 ──────────────────────────────
