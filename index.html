@@ -113,7 +113,7 @@ body {
 /* ── KPI ── */
 .kpi-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 12px;
   margin-bottom: 14px;
 }
@@ -290,6 +290,8 @@ body {
 .badge { display: inline-block; padding: 1px 7px; border-radius: 9px; font-size: 11px; font-weight: 600; white-space: nowrap; }
 .badge-yes { background: var(--green-light); color: #15803d; }
 .badge-no { background: #f1f3f5; color: var(--text-muted); }
+/* 成单：金额用金色，和「已进私域/预警」区分开 */
+.badge-deal { background: #fef3c7; color: #92400e; font-weight: 600; }
 .badge-stage { background: var(--primary-light); color: #4338ca; }
 .badge-lead { background: #f1f3f5; color: var(--text-secondary); }
 .badge-warn { background: var(--red-light); color: #b91c1c; cursor: help; }
@@ -335,6 +337,9 @@ tr.main-row.is-noid { background: #fffbfb; }
 .qv-btn.qv-red:hover { background: var(--red-light); border-color: var(--red); }
 .qv-btn.qv-red.active { background: var(--red); border-color: var(--red); color: #fff; }
 .qv-btn.qv-purple { border-color: #ddd6fe; color: #6d28d9; background: #faf9ff; }
+.qv-btn.qv-gold { border-color: #fde68a; color: #92400e; background: #fffdf3; }
+.qv-btn.qv-gold:hover { background: #fef3c7; border-color: #f59e0b; }
+.qv-btn.qv-gold.active { background: #b45309; border-color: #b45309; color: #fff; }
 .qv-btn.qv-purple:hover { background: #ede9fe; border-color: #8b5cf6; }
 .qv-btn.qv-purple.active { background: #7c3aed; border-color: #7c3aed; color: #fff; }
 
@@ -606,6 +611,15 @@ footer {
       <div class="kpi-value" id="kpiWarn">0</div>
       <div class="kpi-sub" id="kpiWarnSub">无人跟进 <b>0</b></div>
     </div>
+    <div class="kpi-card" data-metric="deal">
+      <span class="kpi-more">看明细 →</span>
+      <div class="kpi-top">
+        <div class="kpi-icon" style="background:#fef3c7; color:#b45309;">💰</div>
+        <div class="kpi-label">已成单</div>
+      </div>
+      <div class="kpi-value" id="kpiDeal">0</div>
+      <div class="kpi-sub" id="kpiDealSub">合计金额 <b>¥0</b></div>
+    </div>
   </div>
 
   <!-- ── 今日待办（把预警提示变成可执行清单）── -->
@@ -749,12 +763,13 @@ footer {
             <th>私域</th>
             <th>意向</th>
             <th>客户阶段</th>
+            <th>成单</th>
             <th style="cursor:pointer;" onclick="setSortKey('health')" title="按跟进紧急度排序：从未跟进 &gt; 超期未跟 &gt; 计划过期 &gt; 正常">跟进健康度 <span id="sortIndicatorHealth"></span></th>
             <th>预警</th>
           </tr>
         </thead>
         <tbody id="tableBody">
-          <tr class="empty-row"><td colspan="11">加载中...</td></tr>
+          <tr class="empty-row"><td colspan="12">加载中...</td></tr>
         </tbody>
       </table>
     </div>
@@ -812,6 +827,21 @@ const collapsedMonths = new Set();   // 折叠的月份（默认全展开）
 const COLUMNS = ['id','date','weekday','nick_douyin','nick_wechat','channel','lead_way','lead_note',
   'in_private','contact','contact_type','intent','first_add','product','last_follow','follow_way',
   'follow_note','feedback','next_follow','follow_status','stage','warn','customer_info','remark'];
+
+// 第 25 列起是主表透传列（2026-10-28 新增）：X/Y 合并列「是否成单 / 成单金额」。
+// 值只落在合并区的左上格（X），Y 恒空。
+const DEAL_COL = 24;
+
+// 成单金额解析：允许「9980元 / 39800元 / 其他」以及运营手填的纯数字。
+// 返回数字（元）；「其他 / 空 / 无法识别」返回 null，用于合计时跳过。
+function parseDealAmount(v) {
+  const s = (v || '').trim();
+  if (!s) return null;
+  const m = s.replace(/[,，\s]/g, '').match(/(\d+(?:\.\d+)?)/);
+  if (!m) return null;
+  const n = parseFloat(m[1]);
+  return isNaN(n) ? null : n;
+}
 const HEADERS = ['客户编号','线索日期','星期','抖音昵称','微信昵称','来源渠道','留资方式','留资说明',
   '是否进私域','联系方式','联系类型','意向等级','首次添加时间','关注产品/服务','最近跟进日期','跟进方式',
   '跟进内容摘要','客户反馈','下次跟进日期','跟进状态','客户阶段','预警','客户具体信息','备注'];
@@ -915,6 +945,10 @@ function buildRecords(csvText) {
     const rec = {};
     COLUMNS.forEach((col, i) => { rec[col] = (raw[i] || '').trim(); });
     rec.channel = normChannel(rec.channel);
+    // 主表透传列（第 25 列起）：X/Y 合并列「成单金额」。
+    // 24 列映射保持不变，新字段单独挂，避免影响既有 COLUMNS 口径。
+    rec.deal = (raw[DEAL_COL] || '').trim();
+    rec.deal_amount = parseDealAmount(rec.deal);
 
     // 主表第 0 列 = 客户序号（2026-10-14 起）。序号是行号，可能为空或重复，
     // 故内部标识 id 用「序号」优先、缺失时回退到行序，保证列表 key 唯一。
@@ -1022,6 +1056,9 @@ function quickViews() {
     { key: 'noid',     cls: 'qv-amber',  label: '⚠ 待补身份',
       hint: '主表漏填昵称和联系方式，看板认不出是谁；已有跟进记录，不要删',
       filter: r => r.no_identity },
+    { key: 'deal',     cls: 'qv-gold',   label: '💰 已成单',
+      hint: '主表「是否成单 / 成单金额」列已填金额的客户',
+      filter: r => !!r.deal },
   ];
 }
 
@@ -1083,8 +1120,7 @@ const METRICS = {
     groupBy: r => (isStale(r) || isNeverFollowed(r)) ? '⚠ 超期 / 从未跟进（优先处理）' : '正常跟进中',
   },
   warn: {
-    title: '预警客户',
-    desc: '<span class="t">什么是预警客户：</span>主表「<b>预警</b>」列被系统自动打了标记的客户。'
+    title: '预警客户', desc: '<span class="t">什么是预警客户：</span>主表「<b>预警</b>」列被系统自动打了标记的客户。'
         + '标记不是随便打的，目前有<b>两条明确规则</b>，每条都对应一个具体问题：<br>'
         + '<b>① ⚠进私域无人跟进</b> —— 客户已进私域，但没有任何跟进记录，或阶段被标记为「已交接未跟进」。<br>'
         + '<b>② ⚠日期格式错</b> —— 「下次跟进日期」填的不是标准日期（如「下个-初」），系统无法排期。<br>'
@@ -1093,6 +1129,14 @@ const METRICS = {
     extra: r => r.warn,
     groupBy: r => r.warn,
     groupReason: r => WARN_RULES[r.warn] || null,
+  },
+  deal: {
+    title: '已成单客户',
+    desc: '<span class="t">怎么算的：</span>主表最右侧「<b>是否成单 / 成单金额</b>」合并列里<b>已填金额</b>的客户。'
+        + '金额来自下拉选项（9980元 / 39800元 / 其他），合计时「其他」若没写具体数字则不计入金额。<br>'
+        + '这是整条链路（直播 → 加粉 → 跟进）<b>真正落地的结果</b>，比加粉数更能说明问题。',
+    items: () => allData.filter(r => r.deal),
+    extra: r => `${r.deal} · 最近跟进 ${r.last_follow || '未填'}`,
   },
 };
 
@@ -1114,6 +1158,8 @@ function computeSummary(rows) {
     warn: rows.filter(hasWarn).length,
     warn_unfollowed: rows.filter(r => r.warn.includes('无人跟进')).length,
     week_new: week,
+    deal_count: rows.filter(r => r.deal).length,
+    deal_sum: rows.reduce((s, r) => s + (r.deal_amount || 0), 0),
   };
 }
 
@@ -1126,6 +1172,14 @@ function renderKPI(s) {
   document.getElementById('kpiFollowingSub').innerHTML = `其中超期未跟 <b>${s.following_stale}</b>`;
   document.getElementById('kpiWarn').textContent = s.warn;
   document.getElementById('kpiWarnSub').innerHTML = `无人跟进 <b>${s.warn_unfollowed}</b>`;
+  document.getElementById('kpiDeal').textContent = s.deal_count;
+  document.getElementById('kpiDealSub').innerHTML = `合计金额 <b>${fmtMoney(s.deal_sum)}</b>`;
+}
+
+// 金额展示：¥9,980（无值时 ¥0）
+function fmtMoney(n) {
+  const v = Math.round(n || 0);
+  return '¥' + v.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
 // ── 今日待办渲染 ────────────────────────
@@ -1428,7 +1482,7 @@ function detailHtml(r) {
   const followHint = !r.last_follow
     ? '<span style="color:#b91c1c;font-weight:600;">从未跟进</span>'
     : (d > STALE_DAYS ? `<span style="color:#c2410c;font-weight:600;">${d} 天未跟进</span>` : `${d} 天前`);
-  return `<tr class="detail-row"><td colspan="11"><div class="detail-grid">
+  return `<tr class="detail-row"><td colspan="12"><div class="detail-grid">
     ${r.warn ? warnReasonHtml(r) : ''}
     ${r.no_identity ? `<div class="warn-reason" style="background:#fff5f5;border-color:#fecaca;">
       <div class="warn-reason-title" style="color:#b91c1c;">⚠ 这条记录缺少身份信息</div>
@@ -1451,6 +1505,7 @@ function detailHtml(r) {
     ${item('意向等级', r.intent)}${item('关注产品/服务', r.product)}
     <div class="detail-item"><span class="k">最近跟进</span><span class="v">${r.last_follow ? escapeHtml(r.last_follow) + ' ' : ''}（${followHint}）</span></div>
     ${item('跟进方式', r.follow_way)}${item('跟进状态', r.follow_status)}${item('下次跟进日期', r.next_follow)}
+    ${item('成单金额', r.deal)}
     <div class="detail-item" style="grid-column:1/-1;">
       <span class="k">跟进内容 / 客户反馈</span>
       <span class="v" style="color:var(--text-muted);">（内部记录，公网不展示，请在腾讯文档查看）</span>
@@ -1480,6 +1535,11 @@ function mainRowHtml(r) {
   const h = healthOf(r);
   const healthCell = `<span class="badge ${h.cls}" title="${escapeHtml(h.tip)}">${escapeHtml(h.label)}</span>`;
 
+  // 成单：主表 X/Y 合并列，值为「9980元 / 39800元 / 其他」
+  const dealCell = r.deal
+    ? `<span class="badge badge-deal" title="来自主表「是否成单 / 成单金额」列">${escapeHtml(r.deal)}</span>`
+    : '<span style="color:var(--text-muted)">—</span>';
+
   // 待补录：这条客户线上有、但主表还没填 → 提醒人工补录进腾讯主表
   const isPending = pendingIds.has(r.id);
   const pendingTag = isPending
@@ -1502,6 +1562,7 @@ function mainRowHtml(r) {
       <td>${privateBadge}</td>
       <td>${intentBadge(r.intent)}</td>
       <td>${stageBadge(r.stage)}</td>
+      <td>${dealCell}</td>
       <td>${healthCell}</td>
       <td>${warnCell}</td>
     </tr>${open ? detailHtml(r) : ''}`;
@@ -1520,7 +1581,7 @@ function renderTable() {
   });
 
   if (data.length === 0) {
-    tbody.innerHTML = '<tr class="empty-row"><td colspan="11">暂无符合条件的客户数据</td></tr>';
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="12">暂无符合条件的客户数据</td></tr>';
     document.getElementById('tableCount').textContent = '0';
     return;
   }
@@ -1547,7 +1608,7 @@ function renderTable() {
       const w = list.filter(hasWarn).length;
       const wTag = w ? ` <span style="color:#b91c1c;">· ⚠ ${w}</span>` : '';
       html += `<tr class="month-row${collapsed ? '' : ' open'}" onclick="toggleMonth('${key}')">
-          <td colspan="11">
+          <td colspan="12">
             <span class="month-caret">▶</span>${escapeHtml(label)}
             <span class="month-count">· ${list.length} 条</span>${wTag}
           </td>
@@ -1793,8 +1854,8 @@ function renderDistributions() {
 async function copyData() {
   const data = filteredData.length > 0 ? filteredData : allData;
   if (!data.length) return showToast('没有数据可复制', 'error');
-  const lines = [HEADERS.join('\t')];
-  for (const r of data) lines.push(COLUMNS.map(c => r[c]).join('\t'));
+  const lines = [HEADERS.concat(['成单金额']).join('\t')];
+  for (const r of data) lines.push(COLUMNS.map(c => r[c]).concat([r.deal || '']).join('\t'));
   try {
     await navigator.clipboard.writeText(lines.join('\n'));
     showToast('数据已复制到剪贴板', 'success');
