@@ -230,9 +230,43 @@ body {
 .dist-swatch { width: 9px; height: 9px; border-radius: 3px; flex-shrink: 0; }
 .dist-name { width: 104px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dist-bar { flex: 1; height: 15px; background: #f1f5f9; border-radius: 4px; overflow: hidden; }
-.dist-bar-fill { height: 100%; border-radius: 4px; min-width: 3px; }
+/* ⚠️ 必须是 block：span 默认 inline，inline 元素上 width/height 无效 → 填充条永远不显示（2026-10-29 修复） */
+.dist-bar-fill { display: block; height: 100%; border-radius: 4px; min-width: 3px; }
 .dist-pct { width: 32px; text-align: right; font-size: 11px; color: var(--text-muted); flex-shrink: 0; }
 .dist-val { width: 24px; text-align: right; font-weight: 700; flex-shrink: 0; }
+/* 环比（选中某个月时显示，与上一个月对比） */
+.dist-delta { width: 46px; text-align: right; font-size: 10.5px; font-weight: 600; flex-shrink: 0; }
+.dist-delta.up { color: var(--green); }
+.dist-delta.down { color: var(--red); }
+.dist-delta.flat { color: #c3c9d4; }
+
+/* ── 按月分析（渠道/阶段切换月份） ── */
+.dist-month-bar {
+  display: flex; flex-wrap: wrap; gap: 5px; align-items: center;
+  margin-bottom: 15px; padding-bottom: 13px;
+  border-bottom: 1px dashed var(--border);
+}
+.dist-month-bar .bar-label {
+  font-size: 11px; font-weight: 700; color: var(--text-muted);
+  letter-spacing: 0.8px; margin-right: 3px; flex-shrink: 0;
+}
+.dist-month-chip {
+  border: 1px solid var(--border); background: var(--card); color: var(--text-secondary);
+  font-size: 11.5px; padding: 3px 9px; border-radius: 999px; cursor: pointer;
+  font-family: inherit; line-height: 1.5; transition: all 0.15s; white-space: nowrap;
+}
+.dist-month-chip:hover { border-color: var(--primary); color: var(--primary); }
+.dist-month-chip.active { background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 600; }
+.dist-month-chip .chip-n { opacity: 0.62; margin-left: 3px; font-size: 10.5px; font-weight: 500; }
+.dist-month-chip.active .chip-n { opacity: 0.85; }
+.dist-month-chip.zero { color: #c3c9d4; }
+.dist-period { font-weight: 600; color: var(--primary); letter-spacing: 0; text-transform: none; margin-left: 5px; }
+.dist-sub-title {
+  font-size: 11px; font-weight: 700; color: var(--text-muted);
+  letter-spacing: 0.8px; margin: 0 0 2px; padding-top: 13px;
+  border-top: 1px dashed var(--border);
+}
+.dist-empty-tip { font-size: 12px; color: var(--text-muted); padding: 6px 0; }
 
 /* ── 筛选 ── */
 .filter-bar {
@@ -657,14 +691,31 @@ footer {
     </div>
 
     <div class="tab-panel" id="panel-dist">
+      <div class="dist-month-bar" id="distMonthBar"></div>
       <div class="dist-grid">
         <div>
-          <div class="dist-col-title">来源渠道分布</div>
+          <div class="dist-col-title">来源渠道分布<span class="dist-period" id="sourceDistPeriod"></span></div>
           <div id="sourceDist"></div>
         </div>
         <div>
-          <div class="dist-col-title">客户阶段分布</div>
+          <div class="dist-col-title">客户阶段分布<span class="dist-period" id="stageDistPeriod"></span></div>
           <div id="stageDist"></div>
+        </div>
+      </div>
+      <div class="dist-grid" style="margin-top:4px;">
+        <div>
+          <div class="dist-sub-title">渠道构成 · 按月</div>
+          <div class="chart-container">
+            <svg class="chart-svg" id="channelStackChart" viewBox="0 0 680 178"></svg>
+          </div>
+          <div class="chart-legend" id="channelStackLegend"></div>
+        </div>
+        <div>
+          <div class="dist-sub-title">阶段构成 · 按月</div>
+          <div class="chart-container">
+            <svg class="chart-svg" id="stageStackChart" viewBox="0 0 680 178"></svg>
+          </div>
+          <div class="chart-legend" id="stageStackLegend"></div>
         </div>
       </div>
     </div>
@@ -676,7 +727,7 @@ footer {
           <div id="yearDist"></div>
         </div>
         <div>
-          <div class="dist-col-title">按月份（近 12 月）</div>
+          <div class="dist-col-title">按月份<span class="dist-period">全部月份</span></div>
           <div id="monthDist"></div>
         </div>
       </div>
@@ -816,6 +867,7 @@ let modalMetricKey = null;
 let sortKey = 'date';                // 'date' | 'health'
 let quickView = '';                  // 快捷视角 key（'' = 不启用）
 let lastActionKey = null;            // 记录弹窗来源，便于「跳到明细」
+let distMonth = 'all';               // 渠道/阶段分布所选月份（'all' = 累计）
 const collapsedMonths = new Set();   // 折叠的月份（默认全展开）
 
 // 主表列序（24 列，第 1 行是列头）：
@@ -1776,6 +1828,9 @@ const CHANNEL_FALLBACK = ['#0891b2', '#b45309', '#be185d', '#365314', '#1e40af',
 const STAGE_COLORS = {
   '跟进中': '#16a34a',
   '线索': '#4f46e5',
+  '已成单9980': '#ca8a04',
+  '已成单39800': '#b45309',
+  '待成单': '#0d9488',
   '未标注': '#94a3b8',
 };
 
@@ -1787,67 +1842,209 @@ function colorForStage(name) {
   return STAGE_COLORS[name] || '#64748b';
 }
 
-function renderDist(elId, counter, colorFn, limit) {
+// ── 月份轴 ──────────────────────────────
+// 有数据的月份（升序）。渠道/阶段构成只画有数据的月份 —— 空月对「构成占比」没有信息量，
+// 想看连续时间轴（含断月）请用「线索趋势」的全部分份视图。
+function activeMonthKeys() {
+  const m = new Map();
+  for (const r of allData) {
+    const k = ymKey(r.date);
+    if (k) m.set(k, (m.get(k) || 0) + 1);
+  }
+  return [...m.keys()].sort();
+}
+function monthShortLabel(key) {
+  const [y, m] = key.split('-');
+  return `${y.slice(2)}/${parseInt(m, 10)}`;
+}
+function monthLongLabel(key) {
+  const [y, m] = key.split('-');
+  return `${y} 年 ${parseInt(m, 10)} 月`;
+}
+function countBy(list, fn) {
+  const m = new Map();
+  for (const r of list) {
+    const k = fn(r);
+    m.set(k, (m.get(k) || 0) + 1);
+  }
+  return m;
+}
+
+// ── 分布条 ──────────────────────────────
+// opts: { hideZero, prevCounter, keepOrder }
+function renderDist(elId, counter, colorFn, limit, opts) {
+  opts = opts || {};
   const el = document.getElementById(elId);
-  const entries = [...counter.entries()].sort((a, b) => b[1] - a[1]).slice(0, limit || 8);
+  if (!el) return;
+  let entries = [...counter.entries()];
+  if (opts.hideZero) entries = entries.filter(e => e[1] > 0);
+  if (!opts.keepOrder) entries.sort((a, b) => b[1] - a[1]);
+  entries = entries.slice(0, limit || 12);
   if (entries.length === 0) {
-    el.innerHTML = '<div style="color:var(--text-muted);font-size:12.5px;">暂无数据</div>';
+    el.innerHTML = '<div class="dist-empty-tip">本月暂无数据</div>';
     return;
   }
-  const max = entries[0][1];
+  const max = entries[0][1] || 1;
   const total = [...counter.values()].reduce((a, b) => a + b, 0) || 1;
+  const prev = opts.prevCounter || null;
   el.innerHTML = entries.map(([name, val], i) => {
     const color = colorFn(name, i);
     const pct = Math.round(val / total * 100);
+    const w = val > 0 ? Math.max(val / max * 100, 4) : 0;
+    let delta = '';
+    if (prev) {
+      const d = val - (prev.get(name) || 0);
+      const cls = d > 0 ? 'up' : d < 0 ? 'down' : 'flat';
+      const txt = d > 0 ? `↑${d}` : d < 0 ? `↓${Math.abs(d)}` : '—';
+      delta = `<span class="dist-delta ${cls}" title="较上月 ${d > 0 ? '+' : ''}${d} 条">${txt}</span>`;
+    }
     return `
     <div class="dist-row">
       <span class="dist-swatch" style="background:${color}"></span>
       <span class="dist-name" title="${escapeHtml(name)}">${escapeHtml(name)}</span>
-      <span class="dist-bar"><span class="dist-bar-fill" style="width:${Math.max(val / max * 100, 5)}%;background:${color}"></span></span>
+      <span class="dist-bar"><span class="dist-bar-fill" style="width:${w}%;background:${color}"></span></span>
       <span class="dist-pct">${pct}%</span>
-      <span class="dist-val" style="color:${color}">${val}</span>
+      <span class="dist-val" style="color:${color}">${val}</span>${delta}
     </div>`;
   }).join('');
 }
 
+// 月份切换胶囊（只列有数据的月份）
+function renderDistMonthBar() {
+  const el = document.getElementById('distMonthBar');
+  if (!el) return;
+  const counts = countBy(allData, r => ymKey(r.date));
+  const months = [...counts.keys()].filter(Boolean).sort();
+  let html = '<span class="bar-label">按月查看</span>';
+  html += `<button class="dist-month-chip${distMonth === 'all' ? ' active' : ''}" data-month="all" onclick="setDistMonth('all')">全部<span class="chip-n">${allData.length}</span></button>`;
+  for (const k of months) {
+    const n = counts.get(k) || 0;
+    html += `<button class="dist-month-chip${distMonth === k ? ' active' : ''}" data-month="${k}" title="${monthLongLabel(k)}：${n} 条" onclick="setDistMonth('${k}')">${monthShortLabel(k)}<span class="chip-n">${n}</span></button>`;
+  }
+  el.innerHTML = html;
+}
+
+function setDistMonth(key) {
+  distMonth = key;
+  renderDistributions();
+}
+
+// ── 堆叠柱状图（每月构成）─────────────────
+// 每根柱 = 一个月的线索量，柱内按维度切片着色 —— 既看总量变化，也看结构变化。
+function renderStackChart(svgId, legendId, dimFn, colorFn) {
+  const svg = document.getElementById(svgId);
+  if (!svg) return;
+  const months = activeMonthKeys();
+  const byMonth = new Map(months.map(k => [k, new Map()]));
+  const catTotals = new Map();
+  for (const r of allData) {
+    const k = ymKey(r.date);
+    const bucket = byMonth.get(k);
+    if (!bucket) continue;
+    const c = dimFn(r);
+    bucket.set(c, (bucket.get(c) || 0) + 1);
+    catTotals.set(c, (catTotals.get(c) || 0) + 1);
+  }
+  const cats = [...catTotals.entries()].sort((a, b) => b[1] - a[1]).map(e => e[0]);
+  const totals = months.map(k => [...byMonth.get(k).values()].reduce((a, b) => a + b, 0));
+  const maxTotal = Math.max(...totals, 1);
+
+  const lg = document.getElementById(legendId);
+  if (lg) {
+    lg.innerHTML = cats.map(c => `<span class="lg-item"><span class="lg-dot" style="background:${colorFn(c, cats.indexOf(c))}"></span>${escapeHtml(c)} ${catTotals.get(c)}</span>`).join('');
+  }
+  if (!months.length) { svg.innerHTML = ''; return; }
+
+  const svgW = 680, chartHeight = 116, chartTop = 20, chartLeft = 30;
+  const plotW = svgW - chartLeft - 14;
+  const slot = plotW / months.length;
+  const barWidth = Math.max(Math.min(slot - 14, 54), 6);
+  const dense = months.length > 14;
+  const labelStep = months.length <= 14 ? 1 : Math.ceil(months.length / 13);
+  let s = '';
+
+  s += `<line x1="${chartLeft}" y1="${chartTop + chartHeight}" x2="${chartLeft + plotW}" y2="${chartTop + chartHeight}" stroke="#e8eaed" stroke-width="1"/>`;
+  const ticks = 4;
+  for (let i = 1; i <= ticks; i++) {
+    const v = Math.round(i * maxTotal / ticks);
+    const y = chartTop + chartHeight - (v / maxTotal) * chartHeight;
+    s += `<line x1="${chartLeft - 4}" y1="${y}" x2="${chartLeft}" y2="${y}" stroke="#cbd5e1" stroke-width="1"/>`;
+    s += `<text x="${chartLeft - 7}" y="${y + 4}" text-anchor="end" font-size="10" fill="#9ca3af">${v}</text>`;
+  }
+
+  months.forEach((k, i) => {
+    const x = chartLeft + i * slot + (slot - barWidth) / 2;
+    const selected = distMonth === k;
+    if (selected) {
+      s += `<rect x="${chartLeft + i * slot + 1}" y="${chartTop - 6}" width="${slot - 2}" height="${chartHeight + 6}" fill="#eef2ff" rx="4"/>`;
+    }
+    const bucket = byMonth.get(k);
+    let acc = 0;
+    s += `<g data-month="${k}" data-total="${totals[i]}" style="cursor:pointer" onclick="setDistMonth('${selected ? 'all' : k}')">`;
+    s += `<title>${monthLongLabel(k)}：合计 ${totals[i]} 条</title>`;
+    for (const cat of cats) {
+      const v = bucket.get(cat) || 0;
+      if (!v) continue;
+      const h = (v / maxTotal) * chartHeight;
+      const y = chartTop + chartHeight - ((acc + v) / maxTotal) * chartHeight;
+      s += `<rect x="${x}" y="${y}" width="${barWidth}" height="${h}" fill="${colorFn(cat, cats.indexOf(cat))}" stroke="#fff" stroke-width="1"><title>${monthLongLabel(k)} · ${cat}：${v} 条</title></rect>`;
+      acc += v;
+    }
+    if (!dense) {
+      s += `<text x="${x + barWidth / 2}" y="${chartTop + chartHeight - (totals[i] / maxTotal) * chartHeight - 5}" text-anchor="middle" font-size="10.5" font-weight="600" fill="#6b7280">${totals[i]}</text>`;
+    }
+    s += `</g>`;
+    if (i % labelStep === 0 || i === months.length - 1) {
+      s += `<text x="${x + barWidth / 2}" y="${chartTop + chartHeight + 16}" text-anchor="middle" font-size="${dense ? 9 : 10.5}" font-weight="${selected ? 700 : 400}" fill="${selected ? '#4f46e5' : '#6b7280'}">${monthShortLabel(k)}</text>`;
+    }
+  });
+
+  svg.innerHTML = s;
+}
+
 function renderDistributions() {
-  const channelCounter = new Map();
-  for (const r of allData) {
-    const name = r.channel || '未标注';
-    channelCounter.set(name, (channelCounter.get(name) || 0) + 1);
-  }
-  renderDist('sourceDist', channelCounter, colorForChannel);
+  renderDistMonthBar();
 
-  const stageCounter = new Map();
-  for (const r of allData) {
-    const name = r.stage || '未标注';
-    stageCounter.set(name, (stageCounter.get(name) || 0) + 1);
-  }
-  renderDist('stageDist', stageCounter, colorForStage);
+  const months = activeMonthKeys();
+  const idx = distMonth === 'all' ? -1 : months.indexOf(distMonth);
+  const prevKey = idx > 0 ? months[idx - 1] : null;
+  const curPool = distMonth === 'all' ? allData : allData.filter(r => ymKey(r.date) === distMonth);
+  const prevPool = prevKey ? allData.filter(r => ymKey(r.date) === prevKey) : null;
 
-  // 年度分布
-  const yearCounter = new Map();
-  for (const r of allData) {
-    const name = yKey(r.date) || '未知';
-    yearCounter.set(name, (yearCounter.get(name) || 0) + 1);
-  }
-  renderDist('yearDist', yearCounter, (n, i) => CHANNEL_FALLBACK[i % CHANNEL_FALLBACK.length], 12);
+  const periodTxt = distMonth === 'all'
+    ? `全部累计 · ${allData.length} 条`
+    : `${monthLongLabel(distMonth)} · ${curPool.length} 条` + (prevKey ? `（环比 ${monthShortLabel(prevKey)}）` : '');
+  ['sourceDistPeriod', 'stageDistPeriod'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = '· ' + periodTxt;
+  });
 
-  // 月度分布（近 12 个月）
-  const monthCounter = new Map();
-  const now = new Date();
-  const recent = [];
-  for (let i = 11; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-    recent.push(key);
-    monthCounter.set(key, 0);
-  }
+  // 来源渠道
+  renderDist('sourceDist', countBy(curPool, r => r.channel || '未标注'), colorForChannel, 12, {
+    hideZero: distMonth !== 'all',
+    prevCounter: prevPool ? countBy(prevPool, r => r.channel || '未标注') : null,
+  });
+  renderStackChart('channelStackChart', 'channelStackLegend', r => r.channel || '未标注', colorForChannel);
+
+  // 客户阶段
+  renderDist('stageDist', countBy(curPool, r => r.stage || '未标注'), colorForStage, 12, {
+    hideZero: distMonth !== 'all',
+    prevCounter: prevPool ? countBy(prevPool, r => r.stage || '未标注') : null,
+  });
+  renderStackChart('stageStackChart', 'stageStackLegend', r => r.stage || '未标注', colorForStage);
+
+  // 年度分布（时间序列，保持年份顺序，不按数量排序）
+  renderDist('yearDist', countBy(allData, r => yKey(r.date) || '未知'),
+    (n, i) => CHANNEL_FALLBACK[i % CHANNEL_FALLBACK.length], 12, { keepOrder: true });
+
+  // 月度分布（全部月份，按时间顺序）
+  const monthCounter = new Map(months.map(k => [k, 0]));
   for (const r of allData) {
     const k = ymKey(r.date);
     if (monthCounter.has(k)) monthCounter.set(k, monthCounter.get(k) + 1);
   }
-  renderDist('monthDist', monthCounter, (n, i) => CHANNEL_FALLBACK[(i + 2) % CHANNEL_FALLBACK.length], 12);
+  renderDist('monthDist', monthCounter,
+    (n, i) => CHANNEL_FALLBACK[(i + 2) % CHANNEL_FALLBACK.length], 30, { keepOrder: true });
 }
 
 // ── 复制 ────────────────────────────────
