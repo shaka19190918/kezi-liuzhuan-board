@@ -1003,11 +1003,11 @@ function buildRecords(csvText) {
     rec.deal_amount = parseDealAmount(rec.deal);
 
     // 主表第 0 列 = 客户序号（2026-10-14 起）。序号是行号，可能为空或重复，
-    // 故内部标识 id 用「序号」优先、缺失时回退到行序，保证列表 key 唯一。
+    // 故内部标识 id 用「序号」优先、缺失时回退到「待N」标识，避免与真实序号撞号。
     autoSeq += 1;
     const seq = rec.id_raw = rec.id;
-    rec.seq = seq || String(autoSeq);
-    rec.id = seq ? ('#' + seq) : ('#' + autoSeq);   // 展示用短标识
+    rec.seq = seq || ('待' + autoSeq);
+    rec.id = seq ? ('#' + seq) : ('#待' + autoSeq);   // 展示用短标识
 
     // 待补身份：既无昵称也无联系方式。这类行往往已有跟进记录，不能丢，
     // 但要显式提示补填，否则运营不知道这是谁。
